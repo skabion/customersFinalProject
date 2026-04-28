@@ -37,7 +37,7 @@ namespace ArielProject
                 // (וודא ששם העמודה ב-MyUsers הוא אכן PhoneNum)
                 Session["Phone"] = dr["MyPhoneNumber"].ToString();
 
-                Response.Redirect("Catalog.aspx");
+                Response.Redirect("HomePage.aspx");
             }
             else
             {

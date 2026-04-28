@@ -17,11 +17,11 @@ namespace ArielProject
                 OleDbConnection con = new OleDbConnection();
                 con.ConnectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("") + "\\DBusers1.accdb";
                 con.Open();
-                string strsql = "SELECT Ezor FROM HlpTbl ORDER BY Ezor Desc";
+                string strsql = "SELECT Area FROM MyUsers ORDER BY Area Desc";
                 OleDbCommand cmd = new OleDbCommand(strsql, con);
                 OleDbDataReader dr = cmd.ExecuteReader();
                 DropDownList1.DataSource = dr;
-                DropDownList1.DataTextField = "Ezor";
+                DropDownList1.DataTextField = "Area";
                 DropDownList1.DataBind();
                 con.Close();
             }
@@ -57,9 +57,9 @@ namespace ArielProject
                 "Gluten, Peanuts, TreeNuts, Fish, Sesame, Milk, " +
                 "Area) " +
                 "VALUES (" +
-                "'" + TextBox1.Text + "'," +      // MyFullName
-                "'" + TextBox2.Text + "'," +      // MyPassword
-                "'" + TextBox3.Text + "'," +      // MyPhoneNumber
+                "'" + SignUp_FullName.Text + "'," +      // MyFullName
+                "'" + SignUp_Password.Text + "'," +      // MyPassword
+                "'" + SignUp_Phone.Text + "'," +      // MyPhoneNumber
                 "'" + vegetarian + "'," +
                 "'" + vegan + "'," +
                 "'" + kosher + "'," +

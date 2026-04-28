@@ -147,6 +147,8 @@ namespace ArielProject
             LblMsg.ForeColor = System.Drawing.Color.Green;
 
             RepeaterTimes.Visible = false;
+
+            Page.ClientScript.RegisterStartupScript(this.GetType(), "clearTimer", "clearBookingTimer();", true);
         }
     }
     // =========================================================

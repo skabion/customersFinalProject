@@ -11,7 +11,23 @@ namespace ArielProject
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            bool isLoggedIn = Session["User"] != null;
 
+            if (isLoggedIn)
+                LblUserName.Text = Session["User"].ToString();
+            else
+                LblUserName.Text = "אורח";
+
+            LnkRegister.Visible = !isLoggedIn;
+            LnkLogin.Visible = !isLoggedIn;
+            BtnLogout.Visible = isLoggedIn;
+        }
+
+        protected void BtnLogout_Click(object sender, EventArgs e)
+        {
+            Session.Clear();
+            Session.Abandon();
+            Response.Redirect("HomePage.aspx");
         }
     }
 }

@@ -72,9 +72,159 @@
             margin-bottom: 20px;
             text-align: center;
         }
+
+        .timer-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #e74c3c;
+            color: white;
+            text-align: center;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 9999;
+            direction: rtl;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: background 0.5s;
+        }
+
+        .timer-bar.warning {
+            background: #e67e22;
+        }
+
+        .timer-bar.urgent {
+            background: #c0392b;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { opacity: 1; }
+            to   { opacity: 0.7; }
+        }
+
+        .timer-expired-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .timer-expired-overlay.active {
+            display: flex;
+        }
+
+        .timer-expired-box {
+            background: white;
+            border-radius: 12px;
+            padding: 40px 30px;
+            text-align: center;
+            direction: rtl;
+            max-width: 340px;
+            width: 90%;
+        }
+
+        .timer-expired-box h2 {
+            color: #c0392b;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        .timer-expired-box p {
+            color: #555;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+
+        .timer-expired-box a {
+            display: inline-block;
+            background: #2c3e50;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+        }
     </style>
 </head>
-<body>
+<body style="padding-top: 52px;">
+
+    <!-- Countdown Timer Bar -->
+    <div class="timer-bar" id="timerBar">
+        ⏱ זמן להזמנה: <span id="timerDisplay">03:00</span>
+    </div>
+
+    <!-- Expired Overlay -->
+    <div class="timer-expired-overlay" id="timerExpiredOverlay">
+        <div class="timer-expired-box">
+            <h2>הזמן הסתיים ⏰</h2>
+            <p>חלפו 3 דקות ממועד תחילת ההזמנה.<br />אנא חזור לקטלוג ובחר שוב.</p>
+            <a href="Catalog.aspx">חזור לקטלוג</a>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var _bookingTimerInterval = null;
+        var _bookingStorageKey = "bookingTimerStart";
+
+        function clearBookingTimer() {
+            if (_bookingTimerInterval) { clearInterval(_bookingTimerInterval); }
+            sessionStorage.removeItem(_bookingStorageKey);
+            var bar = document.getElementById("timerBar");
+            if (bar) { bar.style.display = "none"; }
+        }
+
+        (function () {
+            var DURATION = 3 * 60;
+
+            var startTime = sessionStorage.getItem(_bookingStorageKey);
+            if (!startTime) {
+                startTime = Date.now();
+                sessionStorage.setItem(_bookingStorageKey, startTime);
+            } else {
+                startTime = parseInt(startTime, 10);
+            }
+
+            function getRemaining() {
+                var elapsed = Math.floor((Date.now() - startTime) / 1000);
+                return Math.max(0, DURATION - elapsed);
+            }
+
+            function formatTime(secs) {
+                var m = Math.floor(secs / 60);
+                var s = secs % 60;
+                return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+            }
+
+            function updateDisplay() {
+                var remaining = getRemaining();
+                document.getElementById("timerDisplay").textContent = formatTime(remaining);
+
+                var bar = document.getElementById("timerBar");
+                bar.className = "timer-bar";
+                if (remaining <= 60) {
+                    bar.className = "timer-bar urgent";
+                } else if (remaining <= 90) {
+                    bar.className = "timer-bar warning";
+                }
+
+                if (remaining === 0) {
+                    clearInterval(_bookingTimerInterval);
+                    sessionStorage.removeItem(_bookingStorageKey);
+                    document.getElementById("timerExpiredOverlay").className = "timer-expired-overlay active";
+                }
+            }
+
+            updateDisplay();
+            _bookingTimerInterval = setInterval(updateDisplay, 1000);
+        })();
+    </script>
+
     <form id="form1" runat="server">
         <div class="booking-container">
             <div class="res-name">
