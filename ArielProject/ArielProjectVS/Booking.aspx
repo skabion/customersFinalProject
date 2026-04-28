@@ -234,6 +234,15 @@
             <div class="input-group">
                 <label>תאריך:</label>
                 <asp:TextBox ID="TxtDate" runat="server" CssClass="input-control" TextMode="Date"></asp:TextBox>
+                <asp:CompareValidator ID="CompareValidatorDate" runat="server" 
+                ControlToValidate="TxtDate" 
+                ErrorMessage="נדרש לבחור תאריך עתידי" 
+                ForeColor="#c0392b" 
+                Display="Dynamic" 
+                Operator="GreaterThanEqual" 
+                Type="Date"
+                Font-Size="14px">
+            </asp:CompareValidator>
             </div>
 
             <div class="input-group">

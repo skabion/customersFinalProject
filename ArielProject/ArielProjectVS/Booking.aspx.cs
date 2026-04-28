@@ -34,6 +34,12 @@ namespace ArielProject
                     LblResName.Text = Request.QueryString["res"].ToString();
                 }
             }
+
+            if (!IsPostBack)
+            {
+                // מגדיר את הערך להשוואה כתאריך של היום בפורמט שמתאים לשדה HTML5
+                CompareValidatorDate.ValueToCompare = DateTime.Now.ToString("yyyy-MM-dd");
+            }
         }
 
         // ברגע שלוחצים "מצאו לי שולחן"
