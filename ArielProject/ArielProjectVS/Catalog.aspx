@@ -258,6 +258,19 @@
             font-weight: bold;
             color: #f5e27a;
         }
+        .info-modal-map {
+            margin-top: 10px;
+            border: 1px solid rgba(212,175,55,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+        }
+        .info-modal-map iframe {
+            display: block;
+            width: 100%;
+            height: 220px;
+            border: 0;
+        }
         .info-modal-book-btn {
             display: block; width: 100%; text-align: center;
             margin-top: 22px; padding: 13px 20px;
@@ -336,6 +349,9 @@
         <h2 class="info-modal-title" id="modalTitle"></h2>
         <div class="info-modal-section" id="modalAbout"></div>
         <div class="info-modal-section">📍 <b>כתובת:</b> <span id="modalAddress"></span></div>
+        <div class="info-modal-map" id="modalMapContainer" style="display:none;">
+            <iframe id="modalMapFrame" src="" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
         <div class="info-modal-section">
             ⏰ <b>שעות פעילות:</b><br />
             <span id="modalHours"></span>
@@ -595,6 +611,18 @@
         document.getElementById("modalDishes").innerHTML = d.querySelector(".ri-dishes").innerHTML;
         document.getElementById("modalRating").innerText = d.querySelector(".ri-rating").innerText;
         document.getElementById("modalBookBtn").href = "Booking.aspx?res=" + encodeURIComponent(name);
+
+        var address = d.querySelector(".ri-addr").innerText.trim();
+        var mapContainer = document.getElementById("modalMapContainer");
+        var mapFrame = document.getElementById("modalMapFrame");
+        if (address !== "") {
+            mapFrame.src = "https://maps.google.com/maps?q=" + encodeURIComponent(address) + "&t=m&z=16&output=embed&iwloc=near";
+            mapContainer.style.display = "block";
+        } else {
+            mapFrame.src = "";
+            mapContainer.style.display = "none";
+        }
+
         document.getElementById("restaurantInfoModal").classList.add("active");
     }
 
