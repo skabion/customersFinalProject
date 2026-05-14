@@ -259,9 +259,9 @@
             <asp:Repeater ID="RepeaterTimes" runat="server" OnItemCommand="RepeaterTimes_ItemCommand">
                 <ItemTemplate>
                     <div>
-                        <asp:Button ID="BtnTime" runat="server" 
-                            Text='<%# Eval("TimeStr") %>' 
-                            CommandArgument='<%# Eval("TimeStr") %>' 
+                        <asp:Button ID="BtnTime" runat="server"
+                            Text='<%# Eval("TimeStr") %>'
+                            CommandArgument='<%# Eval("TimeStr") %>'
                             Enabled='<%# Convert.ToBoolean(Eval("IsAvailable")) %>'
                             CssClass='<%# Convert.ToBoolean(Eval("IsAvailable")) ? "available-time" : "unavailable-time" %>' />
                     </div>
@@ -270,6 +270,20 @@
 
             <br />
             <asp:Label ID="LblMsg" runat="server" Font-Bold="True"></asp:Label>
+
+            <asp:Panel ID="TaxiPanel" runat="server" Visible="false"
+                style="margin-top:20px; padding:15px; border:1px solid #2c3e50; border-radius:8px; background:#f9f9f9; text-align:center;">
+                <asp:Label ID="LblTaxiQuestion" runat="server" Font-Bold="True" Font-Size="16px" ForeColor="#2c3e50"></asp:Label>
+                <br /><br />
+                <asp:Button ID="BtnTaxiYes" runat="server" Text="כן, הזמינו לי הסעה"
+                    OnClick="BtnTaxiYes_Click"
+                    BackColor="#27ae60" ForeColor="White" Width="48%" Height="40px" Font-Bold="True" />
+                <asp:Button ID="BtnTaxiNo" runat="server" Text="לא תודה"
+                    OnClick="BtnTaxiNo_Click"
+                    BackColor="#7f8c8d" ForeColor="White" Width="48%" Height="40px" Font-Bold="True" />
+                <br /><br />
+                <asp:Label ID="LblTaxiResult" runat="server"></asp:Label>
+            </asp:Panel>
         </div>
     </form>
 </body>

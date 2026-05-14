@@ -275,6 +275,7 @@ namespace ArielProject
 
         private void SaveToDB(string finalTime)
         {
+            // 1. שמירת ההזמנה במסד הנתונים המקומי
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("") + "\\DBusers1.accdb";
             OleDbConnection con = new OleDbConnection(connStr);
 
@@ -288,12 +289,53 @@ namespace ArielProject
             cmd.ExecuteNonQuery();
             con.Close();
 
+            // 2. הצגת הודעת הצלחה והסתרת רשימת השעות
             LblMsg.Text = "ההזמנה לשעה " + finalTime + " בוצעה בהצלחה!";
             LblMsg.ForeColor = System.Drawing.Color.Green;
-
             RepeaterTimes.Visible = false;
 
+            // 3. הצגת הצעת ההסעה - רק עכשיו שואלים את הלקוח אם הוא רוצה הסעה
+            ViewState["BookedTime"] = finalTime;
+            LblTaxiQuestion.Text = "מעוניין בהסעה בשעה " + finalTime + "?";
+            TaxiPanel.Visible = true;
+
+            // עצירת טיימר ההזמנה
             Page.ClientScript.RegisterStartupScript(this.GetType(), "clearTimer", "clearBookingTimer();", true);
+        }
+
+        // הלקוח לחץ "כן, הזמינו לי הסעה" - עכשיו פונים לספק החיצוני
+        protected void BtnTaxiYes_Click(object sender, EventArgs e)
+        {
+            string finalTime = ViewState["BookedTime"] != null ? ViewState["BookedTime"].ToString() : "";
+
+            try
+            {
+                TaxiServiceAPI.WebService1SoapClient taxi = new TaxiServiceAPI.WebService1SoapClient();
+                string taxiResponse = taxi.BookRide(Session["User"].ToString(), LblResName.Text, finalTime);
+
+                LblTaxiResult.Text = "<b>הודעה מחברת ההסעות:</b><br/>" + taxiResponse;
+                LblTaxiResult.ForeColor = System.Drawing.Color.DarkGreen;
+            }
+            catch (Exception)
+            {
+                LblTaxiResult.Text = "שגיאה בחיבור לחברת ההסעות. נסה שוב מאוחר יותר.";
+                LblTaxiResult.ForeColor = System.Drawing.Color.Red;
+            }
+
+            // הסתרת הכפתורים אחרי הלחיצה כדי שלא יוזמן יותר מפעם אחת
+            BtnTaxiYes.Visible = false;
+            BtnTaxiNo.Visible = false;
+            LblTaxiQuestion.Visible = false;
+        }
+
+        // הלקוח לחץ "לא תודה" - לא פונים לספק
+        protected void BtnTaxiNo_Click(object sender, EventArgs e)
+        {
+            LblTaxiResult.Text = "תודה! נשמח לראותך במסעדה.";
+            LblTaxiResult.ForeColor = System.Drawing.Color.DarkGreen;
+            BtnTaxiYes.Visible = false;
+            BtnTaxiNo.Visible = false;
+            LblTaxiQuestion.Visible = false;
         }
     }
     // =========================================================

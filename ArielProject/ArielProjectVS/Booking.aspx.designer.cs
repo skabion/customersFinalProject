@@ -85,5 +85,30 @@ namespace ArielProject
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label LblMsg;
+
+        /// <summary>
+        /// TaxiPanel control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel TaxiPanel;
+
+        /// <summary>
+        /// LblTaxiQuestion control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label LblTaxiQuestion;
+
+        /// <summary>
+        /// BtnTaxiYes control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button BtnTaxiYes;
+
+        /// <summary>
+        /// BtnTaxiNo control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button BtnTaxiNo;
+
+        /// <summary>
+        /// LblTaxiResult control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label LblTaxiResult;
     }
 }

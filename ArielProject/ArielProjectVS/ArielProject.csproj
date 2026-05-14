@@ -47,6 +47,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -69,6 +71,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Booking.aspx" />
+    <Content Include="Connected Services\TaxiServiceAPI\ArielProject.TaxiServiceAPI.BookRideResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <None Include="Connected Services\TaxiServiceAPI\WebService1.disco" />
+    <None Include="Connected Services\TaxiServiceAPI\configuration91.svcinfo" />
+    <None Include="Connected Services\TaxiServiceAPI\configuration.svcinfo" />
+    <None Include="Connected Services\TaxiServiceAPI\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
     <Content Include="HomePage.aspx" />
     <Content Include="Catalog.aspx" />
     <Content Include="Login.aspx" />
@@ -76,6 +88,7 @@
     <Content Include="Delete.aspx" />
     <Content Include="Insert.aspx" />
     <Content Include="Update.aspx" />
+    <None Include="Connected Services\TaxiServiceAPI\WebService1.wsdl" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -93,6 +106,11 @@
     </Compile>
     <Compile Include="Booking.aspx.designer.cs">
       <DependentUpon>Booking.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Connected Services\TaxiServiceAPI\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="HomePage.aspx.cs">
       <DependentUpon>HomePage.aspx</DependentUpon>
@@ -182,6 +200,9 @@
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>ArielProject_localhost_WebService1</CachedSettingsPropName>
     </WebReferenceUrl>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Connected Services\TaxiServiceAPI\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
