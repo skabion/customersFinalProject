@@ -351,6 +351,65 @@
             color: rgba(212,175,55,0.3);
             border-top: 1px solid rgba(212,175,55,0.1);
         }
+
+        /* --- ADMIN MENU --- */
+        .admin-menu-card {
+            max-width: 620px;
+            margin: 0 auto 40px;
+            padding: 40px 36px;
+            background: linear-gradient(145deg,
+                rgba(255,255,255,0.06) 0%,
+                rgba(212,175,55,0.05) 50%,
+                rgba(120,60,200,0.07) 100%);
+            border: 1px solid rgba(212,175,55,0.3);
+            border-radius: 16px;
+            backdrop-filter: blur(6px);
+            text-align: center;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+        }
+
+        .admin-menu-card h3 {
+            font-size: 22px;
+            color: #f5e27a;
+            margin-bottom: 10px;
+        }
+
+        .admin-menu-card p {
+            font-size: 15px;
+            color: rgba(240,232,208,0.75);
+            line-height: 1.8;
+            margin-bottom: 28px;
+        }
+
+        .admin-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .admin-action-btn {
+            display: inline-block;
+            padding: 16px 36px;
+            background: linear-gradient(135deg, #d4af37, #f5e27a, #c9954c);
+            color: #1a0a2e;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 22px rgba(212,175,55,0.35);
+            transition: all 0.3s;
+            min-width: 340px;
+            text-align: center;
+        }
+
+        .admin-action-btn:hover {
+            box-shadow: 0 8px 28px rgba(212,175,55,0.55);
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -366,11 +425,17 @@
         <div class="hero">
             <span class="hero-icon">👑</span>
             <h1>דף מנהל מסעדה</h1>
-            <div class="restaurant-tag">🍽️ <asp:Label ID="LblRestaurantName" runat="server"></asp:Label></div>
+            <asp:Panel ID="PnlRestaurantTag" runat="server">
+                <div class="restaurant-tag">🍽️ <asp:Label ID="LblRestaurantName" runat="server"></asp:Label></div>
+            </asp:Panel>
+            <asp:Panel ID="PnlAdminBadge" runat="server" Visible="false">
+                <div class="restaurant-tag">⚙️ מנהל מערכת</div>
+            </asp:Panel>
         </div>
 
         <div class="gold-divider"></div>
 
+        <asp:Panel ID="PnlStats" runat="server">
         <div class="section-title">✦ &nbsp; סטטיסטיקה כללית &nbsp; ✦</div>
 
         <div class="kpi-row">
@@ -485,9 +550,25 @@
                 <div class="empty-message">📭 אין הזמנות עתידיות במסעדה כרגע</div>
             </asp:Panel>
         </div>
+        </asp:Panel>
+
+        <asp:Panel ID="PnlAdminMenu" runat="server" Visible="false">
+            <div class="admin-menu-card">
+                <h3>ברוך הבא, מנהל מערכת</h3>
+                <p>בחר באפשרות הרצויה לניהול וצפייה בנתוני המערכת</p>
+                <div class="admin-actions">
+                    <asp:HyperLink ID="LnkAllRestaurants" runat="server" NavigateUrl="AllRestaurants.aspx" CssClass="admin-action-btn">
+                        📊 הצגת נתונים על כל המסעדות
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="LnkUserStats" runat="server" NavigateUrl="UserStats.aspx" CssClass="admin-action-btn">
+                        👥 נתוני משתמשים
+                    </asp:HyperLink>
+                </div>
+            </div>
+        </asp:Panel>
 
         <div class="nav-bar">
-            <a href="HomePage.aspx" class="nav-btn">← חזרה לדף הבית</a>
+            <asp:HyperLink ID="BackLink" runat="server" CssClass="nav-btn" NavigateUrl="HomePage.aspx" Text="← חזרה לדף הבית"></asp:HyperLink>
         </div>
 
         <div class="footer">✦ &nbsp; EatIt &copy; 2025 &nbsp; ✦</div>

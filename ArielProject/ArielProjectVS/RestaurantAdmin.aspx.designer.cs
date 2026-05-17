@@ -25,9 +25,44 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.Label LblUserName;
 
         /// <summary>
+        /// PnlRestaurantTag control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel PnlRestaurantTag;
+
+        /// <summary>
         /// LblRestaurantName control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Label LblRestaurantName;
+
+        /// <summary>
+        /// PnlAdminBadge control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel PnlAdminBadge;
+
+        /// <summary>
+        /// PnlStats control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel PnlStats;
+
+        /// <summary>
+        /// PnlAdminMenu control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel PnlAdminMenu;
+
+        /// <summary>
+        /// LnkAllRestaurants control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink LnkAllRestaurants;
+
+        /// <summary>
+        /// LnkUserStats control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink LnkUserStats;
+
+        /// <summary>
+        /// BackLink control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink BackLink;
 
         /// <summary>
         /// LblTotalCount control.

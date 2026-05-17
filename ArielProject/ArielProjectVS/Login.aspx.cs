@@ -45,6 +45,13 @@ namespace ArielProject
                     Session["RestaurantAdmin"] = restAdmin;
                 }
 
+                // אם המשתמש הוא מנהל מערכת (Admin = "כן") - שומרים אותו ב-Session.
+                string adminFlag = dr["Admin"] == DBNull.Value ? "" : dr["Admin"].ToString().Trim();
+                if (adminFlag == "כן")
+                {
+                    Session["Admin"] = true;
+                }
+
                 Response.Redirect("HomePage.aspx");
             }
             else

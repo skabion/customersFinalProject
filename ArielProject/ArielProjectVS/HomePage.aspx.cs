@@ -21,7 +21,8 @@ namespace ArielProject
             LnkRegister.Visible = !isLoggedIn;
             LnkLogin.Visible = !isLoggedIn;
             LnkPersonalArea.Visible = isLoggedIn;
-            LnkRestaurantAdmin.Visible = isLoggedIn && Session["RestaurantAdmin"] != null;
+            // כפתור "דף מנהל מסעדה" - מופיע גם למנהל מסעדה וגם למנהל מערכת
+            LnkRestaurantAdmin.Visible = isLoggedIn && (Session["RestaurantAdmin"] != null || Session["Admin"] != null);
             BtnLogout.Visible = isLoggedIn;
         }
 

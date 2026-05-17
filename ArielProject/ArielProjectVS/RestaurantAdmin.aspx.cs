@@ -49,20 +49,67 @@ namespace ArielProject
                 return;
             }
 
-            // אימות 2: המשתמש חייב להיות מנהל מסעדה
-            if (Session["RestaurantAdmin"] == null)
+            bool isSysAdmin = Session["Admin"] != null;
+            bool isRestAdmin = Session["RestaurantAdmin"] != null;
+
+            // אימות 2: המשתמש חייב להיות מנהל כלשהו - מסעדה או מערכת
+            if (!isSysAdmin && !isRestAdmin)
             {
                 Response.Redirect("HomePage.aspx");
                 return;
             }
 
             LblUserName.Text = Session["User"].ToString();
-            string restaurant = Session["RestaurantAdmin"].ToString();
-            LblRestaurantName.Text = restaurant;
 
-            if (!IsPostBack)
+            // קביעת מצב הדף:
+            //   - מנהל מערכת עם ?restaurant=X => מצב סטטיסטיקה למסעדה X
+            //   - מנהל מערכת בלי QueryString  => מצב תפריט מנהל
+            //   - מנהל מסעדה                 => מצב סטטיסטיקה למסעדה שלו
+            string restaurantToShow = null;
+            bool fromAdminList = false;
+
+            if (isSysAdmin)
             {
-                LoadStatistics(restaurant);
+                string qRest = Request.QueryString["restaurant"];
+                if (!string.IsNullOrEmpty(qRest))
+                {
+                    restaurantToShow = qRest;
+                    fromAdminList = true;
+                }
+            }
+            else if (isRestAdmin)
+            {
+                restaurantToShow = Session["RestaurantAdmin"].ToString();
+            }
+
+            if (restaurantToShow != null)
+            {
+                // מצב סטטיסטיקה
+                PnlAdminMenu.Visible = false;
+                PnlStats.Visible = true;
+                PnlRestaurantTag.Visible = true;
+                PnlAdminBadge.Visible = false;
+                LblRestaurantName.Text = restaurantToShow;
+
+                if (fromAdminList)
+                {
+                    // למנהל מערכת חוזרים לרשימת המסעדות
+                    BackLink.NavigateUrl = "AllRestaurants.aspx";
+                    BackLink.Text = "← חזרה לרשימת המסעדות";
+                }
+
+                if (!IsPostBack)
+                {
+                    LoadStatistics(restaurantToShow);
+                }
+            }
+            else
+            {
+                // מצב תפריט מנהל מערכת
+                PnlStats.Visible = false;
+                PnlAdminMenu.Visible = true;
+                PnlRestaurantTag.Visible = false;
+                PnlAdminBadge.Visible = true;
             }
         }
 
