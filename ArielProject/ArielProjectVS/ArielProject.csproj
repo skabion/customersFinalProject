@@ -91,6 +91,7 @@
     <Content Include="PersonalArea.aspx" />
     <Content Include="MyBookings.aspx" />
     <Content Include="BookingHistory.aspx" />
+    <Content Include="RestaurantAdmin.aspx" />
     <None Include="Connected Services\TaxiServiceAPI\WebService1.wsdl" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -190,6 +191,12 @@
     </Compile>
     <Compile Include="BookingHistory.aspx.designer.cs">
       <DependentUpon>BookingHistory.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="RestaurantAdmin.aspx.cs">
+      <DependentUpon>RestaurantAdmin.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="RestaurantAdmin.aspx.designer.cs">
+      <DependentUpon>RestaurantAdmin.aspx</DependentUpon>
     </Compile>
     <Compile Include="Web References\localhost\Reference.cs">
       <AutoGen>True</AutoGen>

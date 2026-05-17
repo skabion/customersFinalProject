@@ -348,6 +348,9 @@
             <asp:HyperLink ID="LnkPersonalArea" runat="server" NavigateUrl="PersonalArea.aspx" CssClass="nav-btn nav-btn-gold">
                 ✦ אזור אישי
             </asp:HyperLink>
+            <asp:HyperLink ID="LnkRestaurantAdmin" runat="server" NavigateUrl="RestaurantAdmin.aspx" CssClass="nav-btn nav-btn-gold">
+                👑 דף מנהל מסעדה
+            </asp:HyperLink>
             <asp:HyperLink ID="LnkRegister" runat="server" NavigateUrl="Insert.aspx" CssClass="nav-btn nav-btn-outline">
                 הרשמה לאתר
             </asp:HyperLink>

@@ -37,6 +37,14 @@ namespace ArielProject
                 // (וודא ששם העמודה ב-MyUsers הוא אכן PhoneNum)
                 Session["Phone"] = dr["MyPhoneNumber"].ToString();
 
+                // אם המשתמש הוא מנהל מסעדה - שומרים את שם המסעדה ב-Session.
+                // הערך בעמודה הוא "לא" עבור מי שאינו מנהל, אחרת שם המסעדה.
+                string restAdmin = dr["RestaurantAdmin"] == DBNull.Value ? "" : dr["RestaurantAdmin"].ToString().Trim();
+                if (!string.IsNullOrEmpty(restAdmin))
+                {
+                    Session["RestaurantAdmin"] = restAdmin;
+                }
+
                 Response.Redirect("HomePage.aspx");
             }
             else

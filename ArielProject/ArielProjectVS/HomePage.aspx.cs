@@ -21,6 +21,7 @@ namespace ArielProject
             LnkRegister.Visible = !isLoggedIn;
             LnkLogin.Visible = !isLoggedIn;
             LnkPersonalArea.Visible = isLoggedIn;
+            LnkRestaurantAdmin.Visible = isLoggedIn && Session["RestaurantAdmin"] != null;
             BtnLogout.Visible = isLoggedIn;
         }
 
