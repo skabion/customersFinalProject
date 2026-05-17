@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Web.UI;
@@ -19,17 +19,47 @@ namespace ArielProject
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack) { pnlDetails.Visible = false; }
+            // מחייב משתמש מחובר - בלי טלפון אין מה לחפש
+            if (Session["User"] == null || Session["Phone"] == null)
+            {
+                Response.Redirect("Login.aspx");
+                return;
+            }
+
+            LblUserName.Text = Session["User"].ToString();
+
+            // לא מאפשרים לבחור תאריך שעבר - גם בדפדפן (min) וגם בוולידטור של שרת
+            string todayStr = DateTime.Today.ToString("yyyy-MM-dd");
+            txtDate.Attributes["min"] = todayStr;
+            CompareValidatorDate.ValueToCompare = todayStr;
+
+            if (!IsPostBack)
+            {
+                // ההזמנה המבוקשת מגיעה דרך ה-QueryString מדף ההזמנות שלי
+                string qDate = Request.QueryString["date"];
+                string qTime = Request.QueryString["time"];
+
+                if (string.IsNullOrEmpty(qDate) || string.IsNullOrEmpty(qTime))
+                {
+                    pnlDetails.Visible = false;
+                    lblMessage.Text = "לא נבחרה הזמנה לעריכה. חזור לדף ההזמנות.";
+                    lblMessage.ForeColor = System.Drawing.Color.OrangeRed;
+                    return;
+                }
+
+                LoadBooking(qDate, qTime);
+            }
         }
 
-        protected void btnSearch_Click(object sender, EventArgs e)
+        private void LoadBooking(string date, string time)
         {
             using (OleDbConnection conn = new OleDbConnection(connStr))
             {
-                // מחפשים את ההזמנה האחרונה לפי הטלפון
-                string sql = "SELECT TOP 1 * FROM MyBooking WHERE PhoneNum = ? ORDER BY InvDate DESC, InvTime DESC";
+                string sql = "SELECT * FROM MyBooking WHERE PhoneNum = ? AND InvDate = ? AND InvTime = ?";
                 OleDbCommand cmd = new OleDbCommand(sql, conn);
-                cmd.Parameters.AddWithValue("?", txtSearch.Text);
+                cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
+                cmd.Parameters.AddWithValue("?", DateTime.ParseExact(date, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+                cmd.Parameters.AddWithValue("?", time);
 
                 conn.Open();
                 OleDbDataReader reader = cmd.ExecuteReader();
@@ -43,23 +73,33 @@ namespace ArielProject
                     // שומרים ב-Session את הפרטים המזהים כדי שנוכל לעדכן בדיוק את השורה הזו
                     Session["OldDate"] = txtDate.Text;
                     Session["OldTime"] = reader["InvTime"].ToString();
-                    Session["CurrentPhone"] = txtSearch.Text;
 
                     pnlDetails.Visible = true;
-                    lblMessage.Text = "הזמנה נמצאה! ניתן לעדכן פרטים ולבחור שעה חדשה.";
-                    lblMessage.ForeColor = System.Drawing.Color.Blue;
+                    lblMessage.Text = "ניתן לעדכן פרטים ולבחור שעה חדשה.";
+                    lblMessage.ForeColor = System.Drawing.Color.LightGreen;
                 }
                 else
                 {
                     pnlDetails.Visible = false;
-                    lblMessage.Text = "לא נמצאה הזמנה למספר זה.";
-                    lblMessage.ForeColor = System.Drawing.Color.Red;
+                    lblMessage.Text = "ההזמנה לא נמצאה.";
+                    lblMessage.ForeColor = System.Drawing.Color.OrangeRed;
                 }
             }
         }
 
         protected void btnCheckAvailability_Click(object sender, EventArgs e)
         {
+            // הגנת שרת - גם אם הוולידטור בדפדפן עוקף, לא לאפשר תאריך בעבר
+            if (!Page.IsValid) return;
+
+            DateTime chosen;
+            if (!DateTime.TryParse(txtDate.Text, out chosen) || chosen.Date < DateTime.Today)
+            {
+                lblMessage.Text = "לא ניתן לעדכן הזמנה לתאריך שעבר.";
+                lblMessage.ForeColor = System.Drawing.Color.OrangeRed;
+                return;
+            }
+
             GenerateTimeSlots();
         }
 
@@ -123,7 +163,7 @@ namespace ArielProject
             cmd.Parameters.AddWithValue("?", start);
             cmd.Parameters.AddWithValue("?", end);
             cmd.Parameters.AddWithValue("?", type);
-            cmd.Parameters.AddWithValue("?", Session["CurrentPhone"]);
+            cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
             cmd.Parameters.AddWithValue("?", Session["OldDate"]);
             cmd.Parameters.AddWithValue("?", Session["OldTime"]);
 
@@ -149,7 +189,7 @@ namespace ArielProject
                 cmd.Parameters.AddWithValue("?", newTime);
                 cmd.Parameters.AddWithValue("?", txtNumGuests.Text);
                 cmd.Parameters.AddWithValue("?", Session["SelectedTypeUpdate"]);
-                cmd.Parameters.AddWithValue("?", Session["CurrentPhone"]);
+                cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
                 cmd.Parameters.AddWithValue("?", Session["OldDate"]);
                 cmd.Parameters.AddWithValue("?", Session["OldTime"]);
 
@@ -157,7 +197,7 @@ namespace ArielProject
                 cmd.ExecuteNonQuery();
 
                 lblMessage.Text = "ההזמנה עודכנה בהצלחה לשעה " + newTime + "!";
-                lblMessage.ForeColor = System.Drawing.Color.Green;
+                lblMessage.ForeColor = System.Drawing.Color.LightGreen;
                 pnlDetails.Visible = false;
             }
         }
@@ -168,7 +208,7 @@ namespace ArielProject
             {
                 string sql = "DELETE FROM MyBooking WHERE PhoneNum = ? AND InvDate = ? AND InvTime = ?";
                 OleDbCommand cmd = new OleDbCommand(sql, con);
-                cmd.Parameters.AddWithValue("?", Session["CurrentPhone"]);
+                cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
                 cmd.Parameters.AddWithValue("?", Session["OldDate"]);
                 cmd.Parameters.AddWithValue("?", Session["OldTime"]);
 

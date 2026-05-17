@@ -345,6 +345,9 @@
         <!-- NAV BUTTONS -->
         <div class="nav-bar">
             <a href="Catalog.aspx" class="nav-btn nav-btn-gold">✦ להצגת מסעדות</a>
+            <asp:HyperLink ID="LnkPersonalArea" runat="server" NavigateUrl="PersonalArea.aspx" CssClass="nav-btn nav-btn-gold">
+                ✦ אזור אישי
+            </asp:HyperLink>
             <asp:HyperLink ID="LnkRegister" runat="server" NavigateUrl="Insert.aspx" CssClass="nav-btn nav-btn-outline">
                 הרשמה לאתר
             </asp:HyperLink>

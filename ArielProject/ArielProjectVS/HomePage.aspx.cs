@@ -20,6 +20,7 @@ namespace ArielProject
 
             LnkRegister.Visible = !isLoggedIn;
             LnkLogin.Visible = !isLoggedIn;
+            LnkPersonalArea.Visible = isLoggedIn;
             BtnLogout.Visible = isLoggedIn;
         }
 
