@@ -25,9 +25,14 @@
     </div>
 
     <script type="text/javascript">
+        // הוסרה עטיפת IIFE - (function() {...})() - שלא נלמדת בתיכון.
+        // הוחלפו האופרטורים הטרנאריים (?:) ב-if/else מפורש.
+
         var _bookingTimerInterval = null;
         var _bookingStorageKey = "bookingTimerStart";
 
+        // פונקציה שמופעלת מקוד C# (LblClearTimer) כשהזמנה הצליחה -
+        // עוצרת את הטיימר ומסתירה את הסרגל
         function clearBookingTimer() {
             if (_bookingTimerInterval) { clearInterval(_bookingTimerInterval); }
             sessionStorage.removeItem(_bookingStorageKey);
@@ -35,50 +40,69 @@
             if (bar) { bar.style.display = "none"; }
         }
 
-        (function () {
-            var DURATION = 3 * 60;
+        // משך הטיימר בשניות - 3 דקות = 180 שניות
+        var DURATION = 3 * 60;
 
-            var startTime = sessionStorage.getItem(_bookingStorageKey);
-            if (!startTime) {
-                startTime = Date.now();
-                sessionStorage.setItem(_bookingStorageKey, startTime);
-            } else {
-                startTime = parseInt(startTime, 10);
+        // קוראים את זמן ההתחלה מ-sessionStorage. אם זו הפעם הראשונה - שומרים
+        // את הזמן הנוכחי. אחרת ממירים את הערך השמור למספר.
+        var startTime = sessionStorage.getItem(_bookingStorageKey);
+        if (!startTime) {
+            startTime = Date.now();
+            sessionStorage.setItem(_bookingStorageKey, startTime);
+        } else {
+            startTime = parseInt(startTime);
+        }
+
+        // מחשבת כמה שניות נותרו (DURATION פחות הזמן שעבר)
+        function getRemaining() {
+            var elapsed = Math.floor((Date.now() - startTime) / 1000);
+            var remaining = DURATION - elapsed;
+            if (remaining < 0) remaining = 0;
+            return remaining;
+        }
+
+        // ממירה מספר שניות לפורמט MM:SS עם אפס לפני אם צריך
+        function formatTime(secs) {
+            var m = Math.floor(secs / 60);
+            var s = secs % 60;
+
+            // הוחלף האופרטור הטרנארי בבדיקת if/else מפורשת
+            var mStr;
+            if (m < 10) mStr = "0" + m;
+            else mStr = "" + m;
+
+            var sStr;
+            if (s < 10) sStr = "0" + s;
+            else sStr = "" + s;
+
+            return mStr + ":" + sStr;
+        }
+
+        // הפונקציה הראשית של הטיימר - מתעדכנת כל שנייה
+        function updateDisplay() {
+            var remaining = getRemaining();
+            document.getElementById("timerDisplay").textContent = formatTime(remaining);
+
+            // שינוי צבע הסרגל לפי הזמן שנותר (אדום=דחוף, כתום=אזהרה)
+            var bar = document.getElementById("timerBar");
+            bar.className = "timer-bar";
+            if (remaining <= 60) {
+                bar.className = "timer-bar urgent";
+            } else if (remaining <= 90) {
+                bar.className = "timer-bar warning";
             }
 
-            function getRemaining() {
-                var elapsed = Math.floor((Date.now() - startTime) / 1000);
-                return Math.max(0, DURATION - elapsed);
+            // אם הזמן נגמר - מציגים את חלון "הזמן הסתיים"
+            if (remaining === 0) {
+                clearInterval(_bookingTimerInterval);
+                sessionStorage.removeItem(_bookingStorageKey);
+                document.getElementById("timerExpiredOverlay").className = "timer-expired-overlay active";
             }
+        }
 
-            function formatTime(secs) {
-                var m = Math.floor(secs / 60);
-                var s = secs % 60;
-                return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
-            }
-
-            function updateDisplay() {
-                var remaining = getRemaining();
-                document.getElementById("timerDisplay").textContent = formatTime(remaining);
-
-                var bar = document.getElementById("timerBar");
-                bar.className = "timer-bar";
-                if (remaining <= 60) {
-                    bar.className = "timer-bar urgent";
-                } else if (remaining <= 90) {
-                    bar.className = "timer-bar warning";
-                }
-
-                if (remaining === 0) {
-                    clearInterval(_bookingTimerInterval);
-                    sessionStorage.removeItem(_bookingStorageKey);
-                    document.getElementById("timerExpiredOverlay").className = "timer-expired-overlay active";
-                }
-            }
-
-            updateDisplay();
-            _bookingTimerInterval = setInterval(updateDisplay, 1000);
-        })();
+        // מפעילים את הטיימר ומעדכנים את התצוגה כל שנייה (1000 מילישניות)
+        updateDisplay();
+        _bookingTimerInterval = setInterval(updateDisplay, 1000);
     </script>
 
     <form id="form1" runat="server">

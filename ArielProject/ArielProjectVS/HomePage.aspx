@@ -99,18 +99,24 @@
     </form>
 
     <script type="text/javascript">
-        (function () {
-            var hour = new Date().getHours();
-            var greeting;
-            if (hour >= 5 && hour < 12) {
-                greeting = "בוקר טוב,";
-            } else if (hour >= 12 && hour < 17) {
-                greeting = "צהריים טובים,";
-            } else {
-                greeting = "ערב טוב,";
-            }
-            document.getElementById("greetingText").textContent = greeting + " ";
-        })();
+        // הוסר עטיפת IIFE - (function() {...})() - שלא נלמדת בתיכון.
+        // הקוד פשוט רץ מיד כשהדף נטען, כי הוא בתוך <script> בסוף ה-body.
+
+        // קוראים את השעה הנוכחית מהמחשב
+        var hour = new Date().getHours();
+        var greeting;
+
+        // בוחרים את הברכה המתאימה לפי השעה ביום
+        if (hour >= 5 && hour < 12) {
+            greeting = "בוקר טוב,";
+        } else if (hour >= 12 && hour < 17) {
+            greeting = "צהריים טובים,";
+        } else {
+            greeting = "ערב טוב,";
+        }
+
+        // מציגים את הברכה בתוך ה-span עם id="greetingText"
+        document.getElementById("greetingText").textContent = greeting + " ";
     </script>
 </body>
 </html>
