@@ -303,29 +303,13 @@ namespace ArielProject
             Page.ClientScript.RegisterStartupScript(this.GetType(), "clearTimer", "clearBookingTimer();", true);
         }
 
-        // הלקוח לחץ "כן, הזמינו לי הסעה" - עכשיו פונים לספק החיצוני
+        // הלקוח לחץ "כן, הזמינו לי הסעה" - לא מזמינים עדיין, שואלים קודם כתובת
         protected void BtnTaxiYes_Click(object sender, EventArgs e)
         {
-            string finalTime = ViewState["BookedTime"] != null ? ViewState["BookedTime"].ToString() : "";
-
-            try
-            {
-                TaxiServiceAPI.WebService1SoapClient taxi = new TaxiServiceAPI.WebService1SoapClient();
-                string taxiResponse = taxi.BookRide(Session["User"].ToString(), LblResName.Text, finalTime);
-
-                LblTaxiResult.Text = "<b>הודעה מחברת ההסעות:</b><br/>" + taxiResponse;
-                LblTaxiResult.ForeColor = System.Drawing.Color.DarkGreen;
-            }
-            catch (Exception)
-            {
-                LblTaxiResult.Text = "שגיאה בחיבור לחברת ההסעות. נסה שוב מאוחר יותר.";
-                LblTaxiResult.ForeColor = System.Drawing.Color.Red;
-            }
-
-            // הסתרת הכפתורים אחרי הלחיצה כדי שלא יוזמן יותר מפעם אחת
             BtnTaxiYes.Visible = false;
             BtnTaxiNo.Visible = false;
-            LblTaxiQuestion.Visible = false;
+            LblTaxiQuestion.Text = "אנא הזן את כתובת האיסוף";
+            AddressPanel.Visible = true;
         }
 
         // הלקוח לחץ "לא תודה" - לא פונים לספק
@@ -336,6 +320,182 @@ namespace ArielProject
             BtnTaxiYes.Visible = false;
             BtnTaxiNo.Visible = false;
             LblTaxiQuestion.Visible = false;
+        }
+
+        // הלקוח אישר את הכתובת - ולידציה ואז קריאה לספק
+        protected void BtnConfirmAddress_Click(object sender, EventArgs e)
+        {
+            string city = (TxtCity.Text ?? "").Trim();
+            string street = (TxtStreet.Text ?? "").Trim();
+            string house = (TxtHouseNum.Text ?? "").Trim();
+
+            // בדיקה בסיסית - כל השדות חייבים להיות מלאים
+            if (string.IsNullOrEmpty(city) || string.IsNullOrEmpty(street) || string.IsNullOrEmpty(house))
+            {
+                LblAddressError.Text = "יש למלא עיר, רחוב ומספר בית.";
+                return;
+            }
+
+            int houseNum;
+            if (!int.TryParse(house, out houseNum) || houseNum <= 0)
+            {
+                LblAddressError.Text = "מספר בית חייב להיות מספר חיובי.";
+                return;
+            }
+
+            // ולידציה אמיתית מול נתוני משרד הפנים (data.gov.il)
+            string validationError;
+            if (!ValidateCityAndStreet(city, street, out validationError))
+            {
+                LblAddressError.Text = validationError;
+                return;
+            }
+
+            // הכתובת תקינה - מזמינים את ההסעה
+            LblAddressError.Text = "";
+            string finalTime = ViewState["BookedTime"] != null ? ViewState["BookedTime"].ToString() : "";
+            string fullAddress = street + " " + houseNum + ", " + city;
+
+            try
+            {
+                TaxiServiceAPI.WebService1SoapClient taxi = new TaxiServiceAPI.WebService1SoapClient();
+                string taxiResponse = taxi.BookRide(Session["User"].ToString(), LblResName.Text, finalTime, fullAddress);
+
+                LblTaxiResult.Text = "<b>הודעה מחברת ההסעות:</b><br/>" + taxiResponse;
+                LblTaxiResult.ForeColor = System.Drawing.Color.DarkGreen;
+            }
+            catch (Exception)
+            {
+                LblTaxiResult.Text = "שגיאה בחיבור לחברת ההסעות. נסה שוב מאוחר יותר.";
+                LblTaxiResult.ForeColor = System.Drawing.Color.Red;
+            }
+
+            // אחרי הזמנה מוצלחת - מסתירים את כל פאנל הכתובת והשאלה
+            AddressPanel.Visible = false;
+            LblTaxiQuestion.Visible = false;
+        }
+
+        // ולידציה אמיתית של עיר ורחוב מול data.gov.il
+        // resource_id-ים מצוטטים מהקטלוג הפתוח של משרד הפנים
+        private bool ValidateCityAndStreet(string city, string street, out string errorMessage)
+        {
+            errorMessage = "";
+            try
+            {
+                System.Net.ServicePointManager.SecurityProtocol =
+                    System.Net.SecurityProtocolType.Tls12;
+
+                if (!CityExists(city))
+                {
+                    errorMessage = "העיר \"" + city + "\" לא נמצאה במאגר היישובים בישראל.";
+                    return false;
+                }
+
+                if (!StreetExistsInCity(city, street))
+                {
+                    errorMessage = "הרחוב \"" + street + "\" לא קיים בעיר \"" + city + "\".";
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = "לא ניתן לאמת את הכתובת כרגע (שירות החיפוש לא זמין). נסה שוב מאוחר יותר. (" + ex.Message + ")";
+                return false;
+            }
+        }
+
+        private bool CityExists(string city)
+        {
+            // קטלוג היישובים (משרד הפנים)
+            string resourceId = "5c78e9fa-c2e2-4771-93ff-7f400a12f7ba";
+            System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>> records =
+                QueryGovApi(resourceId, city, 50);
+
+            foreach (var rec in records)
+            {
+                if (rec.ContainsKey("שם_ישוב"))
+                {
+                    string val = (rec["שם_ישוב"] ?? "").ToString().Trim();
+                    if (NamesMatch(val, city))
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        private bool StreetExistsInCity(string city, string street)
+        {
+            // קטלוג הרחובות בישראל (משרד הפנים)
+            string resourceId = "9ad3862c-8391-4b2f-84a4-2d4c68625f4b";
+            System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>> records =
+                QueryGovApi(resourceId, street, 300);
+
+            foreach (var rec in records)
+            {
+                string cityVal = rec.ContainsKey("שם_ישוב") ? (rec["שם_ישוב"] ?? "").ToString().Trim() : "";
+                string streetVal = rec.ContainsKey("שם_רחוב") ? (rec["שם_רחוב"] ?? "").ToString().Trim() : "";
+
+                if (NamesMatch(cityVal, city) && NamesMatch(streetVal, street))
+                    return true;
+            }
+            return false;
+        }
+
+        // השוואת שמות גמישה - מתעלמת מסדר רווחים ומקאף
+        private bool NamesMatch(string fromApi, string fromUser)
+        {
+            if (string.IsNullOrEmpty(fromApi) || string.IsNullOrEmpty(fromUser)) return false;
+            string a = fromApi.Replace("-", " ").Replace("\"", "").Trim();
+            string b = fromUser.Replace("-", " ").Replace("\"", "").Trim();
+            while (a.Contains("  ")) a = a.Replace("  ", " ");
+            while (b.Contains("  ")) b = b.Replace("  ", " ");
+            if (a.Equals(b, StringComparison.OrdinalIgnoreCase)) return true;
+            // מאפשר התאמה חלקית - "תל אביב" מתאים ל"תל אביב יפו"
+            if (a.Contains(b) || b.Contains(a)) return true;
+            return false;
+        }
+
+        // קריאה בסיסית ל-data.gov.il - מחזיר את רשימת הרשומות
+        private System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>
+            QueryGovApi(string resourceId, string query, int limit)
+        {
+            string url = "https://data.gov.il/api/3/action/datastore_search?resource_id="
+                + resourceId
+                + "&q=" + System.Net.WebUtility.UrlEncode(query)
+                + "&limit=" + limit;
+
+            var list = new System.Collections.Generic.List<
+                System.Collections.Generic.Dictionary<string, object>>();
+
+            using (System.Net.WebClient client = new System.Net.WebClient())
+            {
+                client.Encoding = System.Text.Encoding.UTF8;
+                client.Headers.Add("User-Agent", "ArielRestaurantProject/1.0");
+                string json = client.DownloadString(url);
+
+                System.Web.Script.Serialization.JavaScriptSerializer ser =
+                    new System.Web.Script.Serialization.JavaScriptSerializer();
+                ser.MaxJsonLength = int.MaxValue;
+
+                // DeserializeObject מחזיר Dictionary לאובייקטים ו-object[] למערכים
+                var data = ser.DeserializeObject(json) as System.Collections.Generic.Dictionary<string, object>;
+                if (data == null || !data.ContainsKey("result")) return list;
+
+                var result = data["result"] as System.Collections.Generic.Dictionary<string, object>;
+                if (result == null || !result.ContainsKey("records")) return list;
+
+                var records = result["records"] as object[];
+                if (records == null) return list;
+
+                foreach (var rec in records)
+                {
+                    var dict = rec as System.Collections.Generic.Dictionary<string, object>;
+                    if (dict != null) list.Add(dict);
+                }
+                return list;
+            }
         }
     }
     // =========================================================

@@ -54,14 +54,18 @@ namespace ArielProject.TaxiServiceAPI {
         
         [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=2)]
         public string pickupTime;
-        
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=3)]
+        public string address;
+
         public BookRideRequestBody() {
         }
-        
-        public BookRideRequestBody(string customerName, string restaurantName, string pickupTime) {
+
+        public BookRideRequestBody(string customerName, string restaurantName, string pickupTime, string address) {
             this.customerName = customerName;
             this.restaurantName = restaurantName;
             this.pickupTime = pickupTime;
+            this.address = address;
         }
     }
     
@@ -131,12 +135,13 @@ namespace ArielProject.TaxiServiceAPI {
             return base.Channel.BookRide(request);
         }
         
-        public string BookRide(string customerName, string restaurantName, string pickupTime) {
+        public string BookRide(string customerName, string restaurantName, string pickupTime, string address) {
             ArielProject.TaxiServiceAPI.BookRideRequest inValue = new ArielProject.TaxiServiceAPI.BookRideRequest();
             inValue.Body = new ArielProject.TaxiServiceAPI.BookRideRequestBody();
             inValue.Body.customerName = customerName;
             inValue.Body.restaurantName = restaurantName;
             inValue.Body.pickupTime = pickupTime;
+            inValue.Body.address = address;
             ArielProject.TaxiServiceAPI.BookRideResponse retVal = ((ArielProject.TaxiServiceAPI.WebService1Soap)(this)).BookRide(inValue);
             return retVal.Body.BookRideResult;
         }
@@ -146,12 +151,13 @@ namespace ArielProject.TaxiServiceAPI {
             return base.Channel.BookRideAsync(request);
         }
         
-        public System.Threading.Tasks.Task<ArielProject.TaxiServiceAPI.BookRideResponse> BookRideAsync(string customerName, string restaurantName, string pickupTime) {
+        public System.Threading.Tasks.Task<ArielProject.TaxiServiceAPI.BookRideResponse> BookRideAsync(string customerName, string restaurantName, string pickupTime, string address) {
             ArielProject.TaxiServiceAPI.BookRideRequest inValue = new ArielProject.TaxiServiceAPI.BookRideRequest();
             inValue.Body = new ArielProject.TaxiServiceAPI.BookRideRequestBody();
             inValue.Body.customerName = customerName;
             inValue.Body.restaurantName = restaurantName;
             inValue.Body.pickupTime = pickupTime;
+            inValue.Body.address = address;
             return ((ArielProject.TaxiServiceAPI.WebService1Soap)(this)).BookRideAsync(inValue);
         }
     }

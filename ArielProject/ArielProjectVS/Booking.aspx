@@ -281,6 +281,36 @@
                 <asp:Button ID="BtnTaxiNo" runat="server" Text="לא תודה"
                     OnClick="BtnTaxiNo_Click"
                     BackColor="#7f8c8d" ForeColor="White" Width="48%" Height="40px" Font-Bold="True" />
+
+                <asp:Panel ID="AddressPanel" runat="server" Visible="false"
+                    style="margin-top:15px; padding:12px; border:1px dashed #2c3e50; border-radius:8px; background:white; text-align:right;">
+                    <div style="font-weight:bold; text-align:center; margin-bottom:10px; color:#2c3e50;">
+                        כתובת איסוף לנהג
+                    </div>
+
+                    <div class="input-group">
+                        <label>עיר:</label>
+                        <asp:TextBox ID="TxtCity" runat="server" CssClass="input-control" placeholder="לדוגמה: תל אביב - יפו"></asp:TextBox>
+                    </div>
+
+                    <div class="input-group">
+                        <label>רחוב:</label>
+                        <asp:TextBox ID="TxtStreet" runat="server" CssClass="input-control" placeholder="לדוגמה: דיזנגוף"></asp:TextBox>
+                    </div>
+
+                    <div class="input-group">
+                        <label>מספר בית:</label>
+                        <asp:TextBox ID="TxtHouseNum" runat="server" CssClass="input-control" TextMode="Number" placeholder="לדוגמה: 12"></asp:TextBox>
+                    </div>
+
+                    <asp:Button ID="BtnConfirmAddress" runat="server" Text="אישור כתובת והזמנה"
+                        OnClick="BtnConfirmAddress_Click"
+                        BackColor="#27ae60" ForeColor="White" Width="100%" Height="40px" Font-Bold="True" />
+
+                    <br /><br />
+                    <asp:Label ID="LblAddressError" runat="server" ForeColor="#c0392b" Font-Bold="True"></asp:Label>
+                </asp:Panel>
+
                 <br /><br />
                 <asp:Label ID="LblTaxiResult" runat="server"></asp:Label>
             </asp:Panel>
