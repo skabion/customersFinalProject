@@ -24,6 +24,9 @@ namespace ArielProject
             // רק בטעינה הראשונה של הדף
             if (!IsPostBack)
             {
+                // מציגים את שם המשתמש המחובר בכותרת
+                LblUserName.Text = Session["User"].ToString();
+
                 // מציגים את שם המסעדה שהגיע בכתובת
                 if (Request.QueryString["res"] != null)
                 {
