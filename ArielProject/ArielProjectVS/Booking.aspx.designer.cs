@@ -42,15 +42,6 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.TextBox TxtDate;
 
         /// <summary>
-        /// CompareValidatorDate control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CompareValidator CompareValidatorDate;
-
-        /// <summary>
         /// TxtGuests control.
         /// </summary>
         /// <remarks>
@@ -69,13 +60,22 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.Button BtnCheckTimes;
 
         /// <summary>
-        /// RepeaterTimes control.
+        /// GridView1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater RepeaterTimes;
+        protected global::System.Web.UI.WebControls.GridView GridView1;
+
+        /// <summary>
+        /// LblClearTimer control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label LblClearTimer;
 
         /// <summary>
         /// LblMsg control.

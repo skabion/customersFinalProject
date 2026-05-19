@@ -38,32 +38,21 @@
             border-radius: 4px;
         }
 
-        /* עיצוב לכפתור של שעה פנויה */
-        .available-time {
-            background-color: white;
-            color: black;
+        /* עיצוב לטבלת השעות */
+        .times-grid {
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .times-grid th, .times-grid td {
             border: 1px solid #ccc;
-            padding: 10px 20px;
-            margin: 5px 0;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            transition: 0.3s;
+            padding: 8px 12px;
+            text-align: center;
         }
 
-        .available-time:hover {
-            background-color: #f0f0f0;
-        }
-
-        /* עיצוב לכפתור של שעה תפוסה (אפור ולא לחיץ) */
-        .unavailable-time {
-            background-color: #f5f5f5;
-            color: #b0b0b0;
-            border: 1px solid #e0e0e0;
-            padding: 10px 20px;
-            margin: 5px 0;
-            font-size: 16px;
-            width: 100%;
+        .times-grid th {
+            background-color: #2c3e50;
+            color: white;
         }
 
         .res-name {
@@ -231,18 +220,12 @@
                 <asp:Label ID="LblResName" runat="server" Text="שם המסעדה"></asp:Label>
             </div>
 
+            <%-- הסרנו את ה-CompareValidator כי הגדרת ערך ההשוואה הייתה
+                 צריכה להיעשות מקוד C# (דבר שלא נלמד תמיד). במקום זאת
+                 הבדיקה שהתאריך עתידי מתבצעת בקוד פונקציית BtnCheckTimes_Click. --%>
             <div class="input-group">
                 <label>תאריך:</label>
                 <asp:TextBox ID="TxtDate" runat="server" CssClass="input-control" TextMode="Date"></asp:TextBox>
-                <asp:CompareValidator ID="CompareValidatorDate" runat="server" 
-                ControlToValidate="TxtDate" 
-                ErrorMessage="נדרש לבחור תאריך עתידי" 
-                ForeColor="#c0392b" 
-                Display="Dynamic" 
-                Operator="GreaterThanEqual" 
-                Type="Date"
-                Font-Size="14px">
-            </asp:CompareValidator>
             </div>
 
             <div class="input-group">
@@ -256,17 +239,17 @@
 
             <br /><br />
 
-            <asp:Repeater ID="RepeaterTimes" runat="server" OnItemCommand="RepeaterTimes_ItemCommand">
-                <ItemTemplate>
-                    <div>
-                        <asp:Button ID="BtnTime" runat="server"
-                            Text='<%# Eval("TimeStr") %>'
-                            CommandArgument='<%# Eval("TimeStr") %>'
-                            Enabled='<%# Convert.ToBoolean(Eval("IsAvailable")) %>'
-                            CssClass='<%# Convert.ToBoolean(Eval("IsAvailable")) ? "available-time" : "unavailable-time" %>' />
-                    </div>
-                </ItemTemplate>
-            </asp:Repeater>
+            <asp:GridView ID="GridView1" runat="server"
+                AutoGenerateColumns="True"
+                AutoGenerateSelectButton="True"
+                OnSelectedIndexChanged="GridView1_SelectedIndexChanged"
+                Width="100%"
+                CssClass="times-grid">
+            </asp:GridView>
+
+            <%-- פקד Label שמשמש להזרקת קוד JavaScript לעצירת הטיימר.
+                 השתמשנו ב-Label במקום ב-Literal כי Label נלמד בכיתה. --%>
+            <asp:Label ID="LblClearTimer" runat="server"></asp:Label>
 
             <br />
             <asp:Label ID="LblMsg" runat="server" Font-Bold="True"></asp:Label>
