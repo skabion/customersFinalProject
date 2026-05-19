@@ -24,85 +24,34 @@ namespace ArielProject
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// SignUp_FullName_RegularExpressionValidator control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RegularExpressionValidator SignUp_FullName_RegularExpressionValidator;
-
-        /// <summary>
         /// SignUp_FullName control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox SignUp_FullName;
 
         /// <summary>
-        /// RequiredFieldValidator1 control.
+        /// LblNameError - הודעת שגיאה לשדה שם
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator RequiredFieldValidator1;
-
-        /// <summary>
-        /// SignUp_Password_RegularExpressionValidator control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RegularExpressionValidator SignUp_Password_RegularExpressionValidator;
+        protected global::System.Web.UI.WebControls.Label LblNameError;
 
         /// <summary>
         /// SignUp_Password control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox SignUp_Password;
 
         /// <summary>
-        /// RequiredFieldValidator2 control.
+        /// LblPasswordError - הודעת שגיאה לשדה סיסמה
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator RequiredFieldValidator2;
-
-        /// <summary>
-        /// SignUp_Phone_RegularExpressionValidator control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RegularExpressionValidator SignUp_Phone_RegularExpressionValidator;
+        protected global::System.Web.UI.WebControls.Label LblPasswordError;
 
         /// <summary>
         /// SignUp_Phone control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox SignUp_Phone;
 
         /// <summary>
-        /// RequiredFieldValidator3 control.
+        /// LblPhoneError - הודעת שגיאה לשדה טלפון
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator RequiredFieldValidator3;
+        protected global::System.Web.UI.WebControls.Label LblPhoneError;
 
         /// <summary>
         /// DropDownList1 control.

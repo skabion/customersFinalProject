@@ -28,7 +28,9 @@
         <div class="gold-divider"></div>
 
         <div class="sort-bar">
-            <label for="<%= DdlSort.ClientID %>">מיון לפי:</label>
+            <%-- הוסר הביטוי <%= DdlSort.ClientID %> שמייצר את ה-ID דינמית.
+                 פשוט מציגים "מיון לפי:" כטקסט, ה-DropDown מופיע מיד אחריו. --%>
+            <label>מיון לפי:</label>
             <asp:DropDownList ID="DdlSort" runat="server" CssClass="sort-select"
                 AutoPostBack="true" OnSelectedIndexChanged="DdlSort_SelectedIndexChanged">
                 <asp:ListItem Value="DateDesc" Text="תאריך - חדש לישן" Selected="True"></asp:ListItem>
@@ -39,26 +41,14 @@
         </div>
 
         <div class="bookings-container">
-            <asp:Repeater ID="RepeaterHistory" runat="server">
-                <ItemTemplate>
-                    <div class="booking-card">
-                        <div class="booking-info">
-                            <div class="booking-restaurant">🍽️ <%# Eval("Restaurant") %></div>
-                            <div class="booking-tags">
-                                <span class="tag">🍴 <%# Eval("FoodType") %></span>
-                                <span class="tag region">📍 <%# Eval("Region") %></span>
-                            </div>
-                            <div class="booking-details">
-                                <span><span class="label">תאריך:</span> <%# Eval("DateStr") %></span>
-                                <span><span class="label">שעה:</span> <%# Eval("InvTime") %></span>
-                                <span><span class="label">סועדים:</span> <%# Eval("NumGuest") %></span>
-                                <span><span class="label">סוג שולחן:</span> <%# Eval("TableType") %></span>
-                            </div>
-                        </div>
-                        <div class="past-badge">✓ הזמנה הסתיימה</div>
-                    </div>
-                </ItemTemplate>
-            </asp:Repeater>
+            <%-- הוחלף ה-Repeater עם <ItemTemplate> ו-Eval() ב-GridView פשוט.
+                 AutoGenerateColumns="True" יוצר אוטומטית עמודה לכל עמודת DataTable.
+                 אין כפתור Select כי זו רק תצוגה היסטורית (אין עריכה). --%>
+            <asp:GridView ID="GridView1" runat="server"
+                AutoGenerateColumns="True"
+                Width="100%"
+                CssClass="times-grid">
+            </asp:GridView>
 
             <asp:Panel ID="PnlEmpty" runat="server" Visible="false">
                 <div class="empty-message">

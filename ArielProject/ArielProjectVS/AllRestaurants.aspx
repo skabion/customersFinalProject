@@ -29,19 +29,17 @@
         <div class="gold-divider"></div>
 
         <div class="restaurants-grid">
-            <asp:Repeater ID="RepeaterRestaurants" runat="server">
-                <ItemTemplate>
-                    <a href='RestaurantAdmin.aspx?restaurant=<%# Eval("EncodedName") %>' class="restaurant-card">
-                        <span class="restaurant-icon">🏛️</span>
-                        <div class="restaurant-name"><%# Eval("Name") %></div>
-                        <div class="restaurant-tags">
-                            <span class="tag">🍴 <%# Eval("FoodType") %></span>
-                            <span class="tag region">📍 <%# Eval("Region") %></span>
-                        </div>
-                        <div class="view-stats-hint">📊 לצפייה בנתונים ←</div>
-                    </a>
-                </ItemTemplate>
-            </asp:Repeater>
+            <%-- הוחלף Repeater עם <ItemTemplate> ו-Eval ב-GridView פשוט.
+                 לחיצה על כפתור הבחירה (Select) מובילה לדף הסטטיסטיקות
+                 של המסעדה (RestaurantAdmin.aspx). --%>
+            <asp:GridView ID="GridView1" runat="server"
+                AutoGenerateColumns="True"
+                AutoGenerateSelectButton="True"
+                SelectText="📊 לצפייה בנתונים"
+                OnSelectedIndexChanged="GridView1_SelectedIndexChanged"
+                Width="100%"
+                CssClass="times-grid">
+            </asp:GridView>
         </div>
 
         <asp:Panel ID="PnlEmpty" runat="server" Visible="false">

@@ -23,10 +23,10 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.Label LblAllergyCount;
         protected global::System.Web.UI.WebControls.Label LblAdminsCount;
 
-        // Charts
-        protected global::System.Web.UI.WebControls.Repeater RepeaterAreas;
-        protected global::System.Web.UI.WebControls.Repeater RepeaterDiets;
-        protected global::System.Web.UI.WebControls.Repeater RepeaterAllergies;
+        // Charts (Labels - מקבלים HTML שנבנה בקוד C#)
+        protected global::System.Web.UI.WebControls.Label LblAreaChart;
+        protected global::System.Web.UI.WebControls.Label LblDietChart;
+        protected global::System.Web.UI.WebControls.Label LblAllergyChart;
 
         // Filters
         protected global::System.Web.UI.WebControls.DropDownList DdlArea;
@@ -40,7 +40,8 @@ namespace ArielProject
         // Results
         protected global::System.Web.UI.WebControls.Label LblShowing;
         protected global::System.Web.UI.WebControls.Label LblTotal;
-        protected global::System.Web.UI.WebControls.Repeater RepeaterUsers;
+        // רשימת המשתמשים המסוננת (Label - מקבל HTML שנבנה בקוד C#)
+        protected global::System.Web.UI.WebControls.Label LblUsersList;
         protected global::System.Web.UI.WebControls.Panel PnlEmpty;
     }
 }

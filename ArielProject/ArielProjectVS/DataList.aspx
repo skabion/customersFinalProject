@@ -9,9 +9,12 @@
     <form id="form1" runat="server">
 
 
+        <%-- תוקנו 2 דברים:
+             1. הוחלף תחביר DataBinder.Eval(Container.DataItem, "x") ב-Eval("x") פשוט יותר
+             2. שם העמודה היה "MyRestaurants" (שם הטבלה, לא קיים כעמודה) - תוקן ל-"Restaurants" --%>
         <asp:DataList ID="DataList1" runat="server">
             <ItemTemplate>
-<%# DataBinder.Eval(Container.DataItem, "MyRestaurants") %>
+                <%# Eval("Restaurants") %>
             </ItemTemplate>
         </asp:DataList>
 

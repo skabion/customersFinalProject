@@ -52,15 +52,18 @@
                     OnClick="btnCheckAvailability_Click" CssClass="btn-main" />
 
                 <span class="times-label">בחר שעה חדשה:</span>
-                <asp:Repeater ID="RepeaterTimes" runat="server" OnItemCommand="RepeaterTimes_ItemCommand">
-                    <ItemTemplate>
-                        <asp:Button ID="BtnTime" runat="server"
-                            Text='<%# Eval("TimeStr") %>'
-                            CommandArgument='<%# Eval("TimeStr") %>'
-                            Enabled='<%# Convert.ToBoolean(Eval("IsAvailable")) %>'
-                            CssClass='<%# Convert.ToBoolean(Eval("IsAvailable")) ? "available-time" : "unavailable-time" %>' />
-                    </ItemTemplate>
-                </asp:Repeater>
+                <%-- הוחלף Repeater עם <ItemTemplate> ו-Eval (לא בחומר תיכון)
+                     ב-GridView פשוט עם AutoGenerateColumns. כפתור הבחירה
+                     (Select) מטפל בלחיצה ושולח את השעה הנבחרת לעדכון. --%>
+                <asp:GridView ID="GridView1" runat="server"
+                    AutoGenerateColumns="True"
+                    AutoGenerateSelectButton="True"
+                    SelectText="בחר"
+                    OnSelectedIndexChanged="GridView1_SelectedIndexChanged"
+                    Width="100%"
+                    Visible="false"
+                    CssClass="times-grid">
+                </asp:GridView>
 
                 <asp:Button ID="btnDelete" runat="server" Text="❌ ביטול הזמנה (מחיקה)" OnClick="btnDelete_Click"
                     CssClass="btn-delete" OnClientClick="return confirm('האם אתה בטוח שברצונך לבטל את ההזמנה?');" />

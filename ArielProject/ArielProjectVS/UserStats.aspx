@@ -59,50 +59,23 @@
 
         <div class="section-title">✦ &nbsp; פילוחים וגרפים &nbsp; ✦</div>
 
+        <%-- הוחלפו 3 Repeaters עם ItemTemplate ו-Eval ב-3 Labels.
+             ה-cs בונה את ה-HTML של גרפי הבר בעצמו (BuildBarChartHtml)
+             עם שרשור מחרוזות. --%>
         <div class="chart-grid">
             <div class="chart-card">
                 <div class="chart-title">📍 התפלגות לפי אזור</div>
-                <asp:Repeater ID="RepeaterAreas" runat="server">
-                    <ItemTemplate>
-                        <div class="bar-row">
-                            <div class="bar-label"><%# Eval("Label") %></div>
-                            <div class="bar-track">
-                                <div class="bar-fill" style="width: <%# Eval("Percent") %>%;"></div>
-                            </div>
-                            <div class="bar-value"><%# Eval("Count") %></div>
-                        </div>
-                    </ItemTemplate>
-                </asp:Repeater>
+                <asp:Label ID="LblAreaChart" runat="server"></asp:Label>
             </div>
 
             <div class="chart-card">
                 <div class="chart-title">🥗 העדפות תזונה</div>
-                <asp:Repeater ID="RepeaterDiets" runat="server">
-                    <ItemTemplate>
-                        <div class="bar-row">
-                            <div class="bar-label"><%# Eval("Label") %></div>
-                            <div class="bar-track">
-                                <div class="bar-fill green" style="width: <%# Eval("Percent") %>%;"></div>
-                            </div>
-                            <div class="bar-value"><%# Eval("Count") %></div>
-                        </div>
-                    </ItemTemplate>
-                </asp:Repeater>
+                <asp:Label ID="LblDietChart" runat="server"></asp:Label>
             </div>
 
             <div class="chart-card">
                 <div class="chart-title">⚠️ אלרגיות נפוצות</div>
-                <asp:Repeater ID="RepeaterAllergies" runat="server">
-                    <ItemTemplate>
-                        <div class="bar-row">
-                            <div class="bar-label"><%# Eval("Label") %></div>
-                            <div class="bar-track">
-                                <div class="bar-fill red" style="width: <%# Eval("Percent") %>%;"></div>
-                            </div>
-                            <div class="bar-value"><%# Eval("Count") %></div>
-                        </div>
-                    </ItemTemplate>
-                </asp:Repeater>
+                <asp:Label ID="LblAllergyChart" runat="server"></asp:Label>
             </div>
         </div>
 
@@ -162,27 +135,11 @@
             משתמשים
         </div>
 
+        <%-- הוחלף Repeater עם ItemTemplate ו-Eval ב-Label אחד.
+             ה-cs (BindFilteredUserList) בונה את ה-HTML של כל הכרטיסים
+             בלולאה אחת ומציב אותו כאן. --%>
         <div class="users-container">
-            <asp:Repeater ID="RepeaterUsers" runat="server">
-                <ItemTemplate>
-                    <div class="user-card">
-                        <div class="user-icon">👤</div>
-                        <div class="user-info">
-                            <div class="user-name-row">
-                                <span class="user-name"><%# Eval("Name") %></span>
-                                <%# Eval("RoleTag") %>
-                            </div>
-                            <div class="user-meta">
-                                <span><span class="label">📞</span> <%# Eval("Phone") %></span>
-                                <span><span class="label">📍</span> <%# Eval("AreaHebrew") %></span>
-                            </div>
-                            <div class="tag-row">
-                                <%# Eval("TagsHtml") %>
-                            </div>
-                        </div>
-                    </div>
-                </ItemTemplate>
-            </asp:Repeater>
+            <asp:Label ID="LblUsersList" runat="server"></asp:Label>
 
             <asp:Panel ID="PnlEmpty" runat="server" Visible="false">
                 <div class="empty-message">

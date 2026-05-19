@@ -13,7 +13,9 @@ namespace ArielProject
 
         protected void BtnDeleteHistory_Click(object sender, EventArgs e)
         {
-            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("") + "\\DBusers1.accdb";
+            // נורמליזציה: Server.MapPath("DBusers1.accdb") במקום Server.MapPath("") + "\\DBusers1.accdb" -
+            // נראה יותר נקי וזהה לסגנון של שאר הדפים בפרוייקט.
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
             // 1. נשתמש בפורמט חודש/יום/שנה כי אקסס "מדבר" אמריקאית בשאילתות
@@ -25,6 +27,7 @@ namespace ArielProject
             OleDbCommand cmd = new OleDbCommand(strsql, con);
 
             con.Open();
+            // ExecuteNonQuery מבצע פעולת DELETE ומחזיר את מספר השורות שנמחקו
             int rows = cmd.ExecuteNonQuery();
             con.Close();
 

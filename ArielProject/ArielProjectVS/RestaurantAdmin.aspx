@@ -60,20 +60,13 @@
 
         <div class="section-title">✦ &nbsp; פילוחים וגרפים &nbsp; ✦</div>
 
+        <%-- הוחלפו 3 Repeaters עם ItemTemplate ו-Eval ב-3 Labels.
+             ה-cs בונה את ה-HTML של גרפי הבר בעצמו עם שרשור מחרוזות
+             ומציב את התוצאה ב-Label. --%>
         <div class="chart-grid">
             <div class="chart-card">
                 <div class="chart-title">🪑 התפלגות לפי גודל שולחן</div>
-                <asp:Repeater ID="RepeaterTableTypes" runat="server">
-                    <ItemTemplate>
-                        <div class="bar-row">
-                            <div class="bar-label"><%# Eval("Label") %></div>
-                            <div class="bar-track">
-                                <div class="bar-fill" style="width: <%# Eval("Percent") %>%;"></div>
-                            </div>
-                            <div class="bar-value"><%# Eval("Count") %></div>
-                        </div>
-                    </ItemTemplate>
-                </asp:Repeater>
+                <asp:Label ID="LblTableTypesChart" runat="server"></asp:Label>
                 <asp:Panel ID="PnlEmptyTable" runat="server" Visible="false" CssClass="chart-empty">
                     אין נתונים להצגה
                 </asp:Panel>
@@ -81,17 +74,7 @@
 
             <div class="chart-card">
                 <div class="chart-title">⏰ השעות הפופולריות ביותר</div>
-                <asp:Repeater ID="RepeaterTimes" runat="server">
-                    <ItemTemplate>
-                        <div class="bar-row">
-                            <div class="bar-label"><%# Eval("Label") %></div>
-                            <div class="bar-track">
-                                <div class="bar-fill purple" style="width: <%# Eval("Percent") %>%;"></div>
-                            </div>
-                            <div class="bar-value"><%# Eval("Count") %></div>
-                        </div>
-                    </ItemTemplate>
-                </asp:Repeater>
+                <asp:Label ID="LblTimesChart" runat="server"></asp:Label>
                 <asp:Panel ID="PnlEmptyTimes" runat="server" Visible="false" CssClass="chart-empty">
                     אין נתונים להצגה
                 </asp:Panel>
@@ -99,49 +82,21 @@
 
             <div class="chart-card">
                 <div class="chart-title">📆 הזמנות לפי יום בשבוע</div>
-                <asp:Repeater ID="RepeaterDays" runat="server">
-                    <ItemTemplate>
-                        <div class="bar-row">
-                            <div class="bar-label"><%# Eval("Label") %></div>
-                            <div class="bar-track">
-                                <div class="bar-fill green" style="width: <%# Eval("Percent") %>%;"></div>
-                            </div>
-                            <div class="bar-value"><%# Eval("Count") %></div>
-                        </div>
-                    </ItemTemplate>
-                </asp:Repeater>
+                <asp:Label ID="LblDaysChart" runat="server"></asp:Label>
             </div>
         </div>
 
         <div class="section-title">✦ &nbsp; 5 ההזמנות הקרובות &nbsp; ✦</div>
 
         <div class="upcoming-wrapper">
-            <asp:Repeater ID="RepeaterUpcoming" runat="server">
-                <HeaderTemplate>
-                    <table class="upcoming-table">
-                        <tr>
-                            <th>תאריך</th>
-                            <th>שעה</th>
-                            <th>שם הסועד</th>
-                            <th>טלפון</th>
-                            <th>סועדים</th>
-                            <th>שולחן</th>
-                        </tr>
-                </HeaderTemplate>
-                <ItemTemplate>
-                    <tr>
-                        <td><%# Eval("DateStr") %></td>
-                        <td><%# Eval("InvTime") %></td>
-                        <td><%# Eval("Guest") %></td>
-                        <td><%# Eval("PhoneNum") %></td>
-                        <td><%# Eval("NumGuest") %></td>
-                        <td><%# Eval("TableType") %></td>
-                    </tr>
-                </ItemTemplate>
-                <FooterTemplate>
-                    </table>
-                </FooterTemplate>
-            </asp:Repeater>
+            <%-- הוחלף Repeater עם HeaderTemplate/ItemTemplate/FooterTemplate
+                 ב-GridView פשוט. AutoGenerateColumns יוצר אוטומטית עמודה
+                 לכל עמודה ב-DataTable. --%>
+            <asp:GridView ID="GridView1" runat="server"
+                AutoGenerateColumns="True"
+                Width="100%"
+                CssClass="upcoming-table">
+            </asp:GridView>
 
             <asp:Panel ID="PnlEmptyUpcoming" runat="server" Visible="false">
                 <div class="empty-message">📭 אין הזמנות עתידיות במסעדה כרגע</div>

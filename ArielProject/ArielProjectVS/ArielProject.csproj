@@ -197,6 +197,7 @@
     </Compile>
     <Compile Include="RestaurantAdmin.aspx.cs">
       <DependentUpon>RestaurantAdmin.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="RestaurantAdmin.aspx.designer.cs">
       <DependentUpon>RestaurantAdmin.aspx</DependentUpon>

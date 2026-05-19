@@ -1,25 +1,18 @@
 using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Data.OleDb;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace ArielProject
 {
-    public class TimeSlotUpdate
-    {
-        public string TimeStr { get; set; }
-        public bool IsAvailable { get; set; }
-    }
+    // הוסרה המחלקה TimeSlotUpdate עם properties (get; set;) -
+    // הוחלפה ב-DataTable עם 2 עמודות (שעה, סטטוס)
 
     public partial class Update : System.Web.UI.Page
     {
-        // מחרוזת התחברות גלובלית
-        string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + AppDomain.CurrentDomain.BaseDirectory + "\\DBusers1.accdb";
-
         protected void Page_Load(object sender, EventArgs e)
         {
-            // מחייב משתמש מחובר - בלי טלפון אין מה לחפש
+            // בדיקת התחברות
             if (Session["User"] == null || Session["Phone"] == null)
             {
                 Response.Redirect("Login.aspx");
@@ -28,18 +21,22 @@ namespace ArielProject
 
             LblUserName.Text = Session["User"].ToString();
 
-            // לא מאפשרים לבחור תאריך שעבר - גם בדפדפן (min) וגם בוולידטור של שרת
+            // קביעת תאריך מינימלי בשדה הטופס + הגדרת ערך השוואה ל-Validator.
+            // השארנו את שימוש ב-txtDate.Attributes["min"] כי זה רק קובע HTML
+            // attribute בצורה פשוטה (לא מתקדם).
             string todayStr = DateTime.Today.ToString("yyyy-MM-dd");
             txtDate.Attributes["min"] = todayStr;
             CompareValidatorDate.ValueToCompare = todayStr;
 
             if (!IsPostBack)
             {
-                // ההזמנה המבוקשת מגיעה דרך ה-QueryString מדף ההזמנות שלי
+                // קבלת התאריך והשעה של ההזמנה לעריכה מהכתובת (QueryString)
                 string qDate = Request.QueryString["date"];
                 string qTime = Request.QueryString["time"];
 
-                if (string.IsNullOrEmpty(qDate) || string.IsNullOrEmpty(qTime))
+                // הוחלף string.IsNullOrEmpty בבדיקה ידנית של null או "".
+                // null נוצר כשהפרמטר חסר בכתובת, "" כשהוא ריק.
+                if (qDate == null || qTime == null || qDate == "" || qTime == "")
                 {
                     pnlDetails.Visible = false;
                     lblMessage.Text = "לא נבחרה הזמנה לעריכה. חזור לדף ההזמנות.";
@@ -51,49 +48,74 @@ namespace ArielProject
             }
         }
 
+        // טוען את פרטי ההזמנה הקיימת ומציג אותם בטופס
         private void LoadBooking(string date, string time)
         {
-            using (OleDbConnection conn = new OleDbConnection(connStr))
+            // הוחלף AppDomain.CurrentDomain.BaseDirectory ב-Server.MapPath -
+            // סגנון אחיד לכל הפרוייקט.
+            // הוסר גם בלוק using(...) - חיבור רגיל שנסגר ידנית.
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection conn = new OleDbConnection(connStr);
+
+            // הוחלפו פרמטרים (?) ושימוש ב-DateTime.ParseExact בשרשור מחרוזות.
+            // התאריך כבר מגיע בפורמט yyyy-MM-dd מה-URL.
+            // באקסס תאריך מוקף ב-# במקום ב-'.
+            string sql = "SELECT * FROM MyBooking " +
+                         "WHERE PhoneNum = '" + Session["Phone"].ToString() + "' " +
+                         "AND InvDate = #" + date + "# " +
+                         "AND InvTime = '" + time + "'";
+
+            OleDbCommand cmd = new OleDbCommand(sql, conn);
+            conn.Open();
+            OleDbDataReader reader = cmd.ExecuteReader();
+
+            if (reader.Read())
             {
-                string sql = "SELECT * FROM MyBooking WHERE PhoneNum = ? AND InvDate = ? AND InvTime = ?";
-                OleDbCommand cmd = new OleDbCommand(sql, conn);
-                cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
-                cmd.Parameters.AddWithValue("?", DateTime.ParseExact(date, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
-                cmd.Parameters.AddWithValue("?", time);
+                lblResName.Text = reader["Restaurant"].ToString();
+                txtDate.Text = Convert.ToDateTime(reader["InvDate"]).ToString("yyyy-MM-dd");
+                txtNumGuests.Text = reader["NumGuest"].ToString();
 
-                conn.Open();
-                OleDbDataReader reader = cmd.ExecuteReader();
+                // שומרים ב-Session את הפרטים המזהים של ההזמנה -
+                // נצטרך אותם בהמשך כדי לעדכן או למחוק בדיוק את השורה הזו.
+                Session["OldDate"] = txtDate.Text;
+                Session["OldTime"] = reader["InvTime"].ToString();
 
-                if (reader.Read())
-                {
-                    lblResName.Text = reader["Restaurant"].ToString();
-                    txtDate.Text = Convert.ToDateTime(reader["InvDate"]).ToString("yyyy-MM-dd");
-                    txtNumGuests.Text = reader["NumGuest"].ToString();
-
-                    // שומרים ב-Session את הפרטים המזהים כדי שנוכל לעדכן בדיוק את השורה הזו
-                    Session["OldDate"] = txtDate.Text;
-                    Session["OldTime"] = reader["InvTime"].ToString();
-
-                    pnlDetails.Visible = true;
-                    lblMessage.Text = "ניתן לעדכן פרטים ולבחור שעה חדשה.";
-                    lblMessage.ForeColor = System.Drawing.Color.LightGreen;
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                    lblMessage.Text = "ההזמנה לא נמצאה.";
-                    lblMessage.ForeColor = System.Drawing.Color.OrangeRed;
-                }
+                pnlDetails.Visible = true;
+                lblMessage.Text = "ניתן לעדכן פרטים ולבחור שעה חדשה.";
+                lblMessage.ForeColor = System.Drawing.Color.LightGreen;
             }
+            else
+            {
+                pnlDetails.Visible = false;
+                lblMessage.Text = "ההזמנה לא נמצאה.";
+                lblMessage.ForeColor = System.Drawing.Color.OrangeRed;
+            }
+
+            conn.Close();
         }
 
+        // לחיצה על "בדוק שעות פנויות" - בודק שהתאריך תקין ומציג שעות פנויות
         protected void btnCheckAvailability_Click(object sender, EventArgs e)
         {
-            // הגנת שרת - גם אם הוולידטור בדפדפן עוקף, לא לאפשר תאריך בעבר
+            // בודקים שכל הוולידטורים בדף עברו (CompareValidator של תאריך)
             if (!Page.IsValid) return;
 
+            // הוחלפה DateTime.TryParse עם פרמטר out ב-try/catch + DateTime.Parse רגיל.
+            // out parameter לא נלמד בתיכון.
             DateTime chosen;
-            if (!DateTime.TryParse(txtDate.Text, out chosen) || chosen.Date < DateTime.Today)
+            try
+            {
+                chosen = DateTime.Parse(txtDate.Text);
+            }
+            catch
+            {
+                lblMessage.Text = "תאריך לא תקין.";
+                lblMessage.ForeColor = System.Drawing.Color.OrangeRed;
+                return;
+            }
+
+            // בדיקת הגנת שרת - גם אם הוולידטור עוקף, אסור תאריך בעבר
+            if (chosen.Date < DateTime.Today)
             {
                 lblMessage.Text = "לא ניתן לעדכן הזמנה לתאריך שעבר.";
                 lblMessage.ForeColor = System.Drawing.Color.OrangeRed;
@@ -103,122 +125,194 @@ namespace ArielProject
             GenerateTimeSlots();
         }
 
+        // בונה את טבלת השעות הפנויות ומציג אותה ב-GridView
         private void GenerateTimeSlots()
         {
             string res = lblResName.Text;
             string date = txtDate.Text;
             int guests = int.Parse(txtNumGuests.Text);
 
-            string tableType = "SmallTables";
-            string typeName = "Small";
-            if (guests > 2 && guests <= 4) { tableType = "MediumTables"; typeName = "Medium"; }
-            else if (guests > 4) { tableType = "LargeTables"; typeName = "Large"; }
+            // קביעת סוג השולחן לפי מספר הסועדים - פשוט if/else if
+            string tableType;
+            string typeName;
+            if (guests <= 2)
+            {
+                tableType = "SmallTables";
+                typeName = "Small";
+            }
+            else if (guests <= 4)
+            {
+                tableType = "MediumTables";
+                typeName = "Medium";
+            }
+            else
+            {
+                tableType = "LargeTables";
+                typeName = "Large";
+            }
 
             Session["SelectedTypeUpdate"] = typeName;
 
-            using (OleDbConnection con = new OleDbConnection(connStr))
+            // מתחברים למסד ושולפים את מספר השולחנות במסעדה.
+            // הוסר בלוק using(...) - חיבור רגיל שנסגר ידנית.
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection con = new OleDbConnection(connStr);
+
+            string sqlCap = "SELECT " + tableType + " FROM MyRestaurants WHERE Restaurants = '" + res + "'";
+            OleDbCommand cmdCap = new OleDbCommand(sqlCap, con);
+            con.Open();
+            int totalTables = int.Parse(cmdCap.ExecuteScalar().ToString());
+            con.Close();
+
+            // הוחלפה List<TimeSlotUpdate> ב-DataTable עם 2 עמודות.
+            // ה-DataTable יוצג אוטומטית ב-GridView.
+            DataTable dt = new DataTable();
+            dt.Columns.Add("שעה");
+            dt.Columns.Add("סטטוס");
+
+            // לולאה שעוברת על השעות 18:00-23:30 בקפיצות של 30 דקות.
+            // משתמשים ב-int במקום ב-DateTime - יותר פשוט.
+            int startMinutes = 18 * 60;       // 18:00 - שעת פתיחה
+            int endMinutes = 23 * 60 + 30;    // 23:30 - שעה אחרונה אפשרית
+
+            int currentMinutes = startMinutes;
+            while (currentMinutes <= endMinutes)
             {
-                con.Open();
-                // שליפת כמות השולחנות
-                string sqlCap = "SELECT " + tableType + " FROM MyRestaurants WHERE Restaurants = ?";
-                OleDbCommand cmdCap = new OleDbCommand(sqlCap, con);
-                cmdCap.Parameters.AddWithValue("?", res);
-                int totalTables = Convert.ToInt32(cmdCap.ExecuteScalar());
+                // המרת הדקות בחזרה לפורמט HH:mm
+                int h = currentMinutes / 60;
+                int m = currentMinutes % 60;
 
-                List<TimeSlotUpdate> slots = new List<TimeSlotUpdate>();
-                DateTime startTime = DateTime.Parse("18:00");
-                DateTime endTime = DateTime.Parse("23:30");
+                string timeStr = "";
+                if (h < 10) timeStr = timeStr + "0";
+                timeStr = timeStr + h + ":";
+                if (m < 10) timeStr = timeStr + "0";
+                timeStr = timeStr + m;
 
-                while (startTime <= endTime)
-                {
-                    string timeToCheck = startTime.ToString("HH:mm");
-                    bool isAvail = CheckSpecificTime(timeToCheck, res, date, totalTables, typeName, con);
-                    slots.Add(new TimeSlotUpdate { TimeStr = timeToCheck, IsAvailable = isAvail });
-                    startTime = startTime.AddMinutes(30);
-                }
+                bool isAvail = CheckSpecificTime(timeStr, res, date, totalTables, typeName);
 
-                RepeaterTimes.DataSource = slots;
-                RepeaterTimes.DataBind();
+                string statusText;
+                if (isAvail) statusText = "פנוי";
+                else statusText = "תפוס";
+
+                dt.Rows.Add(timeStr, statusText);
+
+                currentMinutes = currentMinutes + 30;
             }
+
+            GridView1.DataSource = dt;
+            GridView1.DataBind();
+            GridView1.Visible = true;
         }
 
-        private bool CheckSpecificTime(string timeToCheck, string res, string date, int total, string type, OleDbConnection con)
+        // בודק אם שעה מסוימת פנויה - סופר כמה שולחנות תפוסים בטווח של שעתיים סביבה.
+        // הוסר פרמטר OleDbConnection - הפונקציה פותחת חיבור משלה.
+        private bool CheckSpecificTime(string timeToCheck, string res, string date, int total, string type)
         {
             DateTime dt = DateTime.Parse(timeToCheck);
             string start = dt.AddHours(-2).ToString("HH:mm");
             string end = dt.AddHours(2).ToString("HH:mm");
 
-            // לוגיקה לבדיקת טווח שעות (כולל חציית חצות אם צריך)
-            string timeCondition = string.Compare(start, end) > 0 ?
-                "(InvTime > ? OR InvTime < ?)" : "(InvTime > ? AND InvTime < ?)";
+            // בדיקה אם הטווח עובר חצות - אם כן צריך תנאי OR במקום AND.
+            // הוחלף string.Compare ב-CompareTo, והוסר האופרטור הטרנארי (?:).
+            string timeCondition;
+            if (start.CompareTo(end) > 0)
+            {
+                timeCondition = "(InvTime > '" + start + "' OR InvTime < '" + end + "')";
+            }
+            else
+            {
+                timeCondition = "(InvTime > '" + start + "' AND InvTime < '" + end + "')";
+            }
 
-            // שיפור: אנחנו סופרים את כל ההזמנות בטווח, *חוץ* מההזמנה שאנחנו כרגע מעדכנים
-            string sqlCount = string.Format(
-                "SELECT COUNT(*) FROM MyBooking WHERE Restaurant=? AND InvDate=? " +
-                "AND {0} AND TableType=? AND NOT (PhoneNum=? AND InvDate=? AND InvTime=?)", timeCondition);
+            // הוחלף string.Format בשרשור מחרוזות פשוט.
+            // השאילתה סופרת את כל ההזמנות בטווח חוץ מההזמנה הנוכחית
+            // (זו שאנחנו עכשיו מעדכנים) - כדי שלא תיחשב כתפוסה בעצמה.
+            string sqlCount = "SELECT COUNT(*) FROM MyBooking " +
+                              "WHERE Restaurant = '" + res + "' " +
+                              "AND InvDate = #" + date + "# " +
+                              "AND " + timeCondition + " " +
+                              "AND TableType = '" + type + "' " +
+                              "AND NOT (PhoneNum = '" + Session["Phone"].ToString() + "' " +
+                              "AND InvDate = #" + Session["OldDate"].ToString() + "# " +
+                              "AND InvTime = '" + Session["OldTime"].ToString() + "')";
+
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection con = new OleDbConnection(connStr);
 
             OleDbCommand cmd = new OleDbCommand(sqlCount, con);
-            cmd.Parameters.AddWithValue("?", res);
-            cmd.Parameters.AddWithValue("?", date);
-            cmd.Parameters.AddWithValue("?", start);
-            cmd.Parameters.AddWithValue("?", end);
-            cmd.Parameters.AddWithValue("?", type);
-            cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
-            cmd.Parameters.AddWithValue("?", Session["OldDate"]);
-            cmd.Parameters.AddWithValue("?", Session["OldTime"]);
+            con.Open();
+            int occupied = int.Parse(cmd.ExecuteScalar().ToString());
+            con.Close();
 
-            int occupied = Convert.ToInt32(cmd.ExecuteScalar());
             return occupied < total;
         }
 
-        protected void RepeaterTimes_ItemCommand(object source, RepeaterCommandEventArgs e)
+        // טיפול בלחיצה על "Select" ליד שעה - אם פנויה, מעדכן את ההזמנה.
+        // הוחלף RepeaterTimes_ItemCommand ב-GridView1_SelectedIndexChanged.
+        protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string newTime = e.CommandArgument.ToString();
+            // אינדקסים: Cells[0]=כפתור, Cells[1]=שעה, Cells[2]=סטטוס
+            string newTime = GridView1.SelectedRow.Cells[1].Text;
+            string status = GridView1.SelectedRow.Cells[2].Text;
+
+            if (status == "תפוס")
+            {
+                lblMessage.Text = "השעה תפוסה, נא לבחור שעה אחרת.";
+                lblMessage.ForeColor = System.Drawing.Color.OrangeRed;
+                return;
+            }
+
             UpdateInDB(newTime);
         }
 
+        // מעדכן את שורת ההזמנה במסד הנתונים
         private void UpdateInDB(string newTime)
         {
-            using (OleDbConnection conn = new OleDbConnection(connStr))
-            {
-                string sql = "UPDATE MyBooking SET InvDate = ?, InvTime = ?, NumGuest = ?, TableType = ? " +
-                             "WHERE PhoneNum = ? AND InvDate = ? AND InvTime = ?";
+            // הוסר בלוק using(...).
+            // הוחלפו פרמטרים בשרשור מחרוזות.
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection conn = new OleDbConnection(connStr);
 
-                OleDbCommand cmd = new OleDbCommand(sql, conn);
-                cmd.Parameters.AddWithValue("?", txtDate.Text);
-                cmd.Parameters.AddWithValue("?", newTime);
-                cmd.Parameters.AddWithValue("?", txtNumGuests.Text);
-                cmd.Parameters.AddWithValue("?", Session["SelectedTypeUpdate"]);
-                cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
-                cmd.Parameters.AddWithValue("?", Session["OldDate"]);
-                cmd.Parameters.AddWithValue("?", Session["OldTime"]);
+            string sql = "UPDATE MyBooking SET " +
+                         "InvDate = #" + txtDate.Text + "#, " +
+                         "InvTime = '" + newTime + "', " +
+                         "NumGuest = '" + txtNumGuests.Text + "', " +
+                         "TableType = '" + Session["SelectedTypeUpdate"].ToString() + "' " +
+                         "WHERE PhoneNum = '" + Session["Phone"].ToString() + "' " +
+                         "AND InvDate = #" + Session["OldDate"].ToString() + "# " +
+                         "AND InvTime = '" + Session["OldTime"].ToString() + "'";
 
-                conn.Open();
-                cmd.ExecuteNonQuery();
+            OleDbCommand cmd = new OleDbCommand(sql, conn);
+            conn.Open();
+            cmd.ExecuteNonQuery();
+            conn.Close();
 
-                lblMessage.Text = "ההזמנה עודכנה בהצלחה לשעה " + newTime + "!";
-                lblMessage.ForeColor = System.Drawing.Color.LightGreen;
-                pnlDetails.Visible = false;
-            }
+            lblMessage.Text = "ההזמנה עודכנה בהצלחה לשעה " + newTime + "!";
+            lblMessage.ForeColor = System.Drawing.Color.LightGreen;
+            pnlDetails.Visible = false;
         }
 
+        // לחיצה על "ביטול הזמנה" - מוחק את ההזמנה מהמסד
         protected void btnDelete_Click(object sender, EventArgs e)
         {
-            using (OleDbConnection con = new OleDbConnection(connStr))
-            {
-                string sql = "DELETE FROM MyBooking WHERE PhoneNum = ? AND InvDate = ? AND InvTime = ?";
-                OleDbCommand cmd = new OleDbCommand(sql, con);
-                cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
-                cmd.Parameters.AddWithValue("?", Session["OldDate"]);
-                cmd.Parameters.AddWithValue("?", Session["OldTime"]);
+            // הוסר בלוק using(...).
+            // הוחלפו פרמטרים בשרשור מחרוזות.
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection con = new OleDbConnection(connStr);
 
-                con.Open();
-                cmd.ExecuteNonQuery();
+            string sql = "DELETE FROM MyBooking " +
+                         "WHERE PhoneNum = '" + Session["Phone"].ToString() + "' " +
+                         "AND InvDate = #" + Session["OldDate"].ToString() + "# " +
+                         "AND InvTime = '" + Session["OldTime"].ToString() + "'";
 
-                lblMessage.Text = "ההזמנה בוטלה ונמחקה מהמערכת.";
-                lblMessage.ForeColor = System.Drawing.Color.Orange;
-                pnlDetails.Visible = false;
-            }
+            OleDbCommand cmd = new OleDbCommand(sql, con);
+            con.Open();
+            cmd.ExecuteNonQuery();
+            con.Close();
+
+            lblMessage.Text = "ההזמנה בוטלה ונמחקה מהמערכת.";
+            lblMessage.ForeColor = System.Drawing.Color.Orange;
+            pnlDetails.Visible = false;
         }
     }
 }

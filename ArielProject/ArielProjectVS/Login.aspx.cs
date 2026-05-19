@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.OleDb;
-using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -33,24 +31,30 @@ namespace ArielProject
                 dr.Read(); // קריאת השורה שנמצאה
                 Session["User"] = dr["MyFullName"].ToString();
 
-                // השורה החדשה: שמירת הטלפון מהטבלה לתוך ה-Session
-                // (וודא ששם העמודה ב-MyUsers הוא אכן PhoneNum)
+                // שמירת הטלפון מהטבלה לתוך ה-Session
                 Session["Phone"] = dr["MyPhoneNumber"].ToString();
 
                 // אם המשתמש הוא מנהל מסעדה - שומרים את שם המסעדה ב-Session.
                 // הערך בעמודה הוא "לא" עבור מי שאינו מנהל, אחרת שם המסעדה.
-                string restAdmin = dr["RestaurantAdmin"] == DBNull.Value ? "" : dr["RestaurantAdmin"].ToString().Trim();
-                if (!string.IsNullOrEmpty(restAdmin))
+                // הוחלף האופרטור הטרנארי (?:) וההשוואה ל-DBNull.Value בקוד פשוט יותר:
+                // קריאה ל-ToString() על תא ריק במסד מחזירה מחרוזת ריקה,
+                // לכן מספיק להשוות ל-"" במקום ל-DBNull.Value.
+                string restAdmin = dr["RestaurantAdmin"].ToString().Trim();
+                if (restAdmin != "")
                 {
                     Session["RestaurantAdmin"] = restAdmin;
                 }
 
                 // אם המשתמש הוא מנהל מערכת (Admin = "כן") - שומרים אותו ב-Session.
-                string adminFlag = dr["Admin"] == DBNull.Value ? "" : dr["Admin"].ToString().Trim();
+                // אותו עיקרון כמו למעלה - בלי אופרטור טרנארי, פשוט ToString().Trim().
+                string adminFlag = dr["Admin"].ToString().Trim();
                 if (adminFlag == "כן")
                 {
                     Session["Admin"] = true;
                 }
+
+                // סוגרים את החיבור גם כשההתחברות מצליחה (תוקן - קודם זה היה רק ב-else)
+                con.Close();
 
                 Response.Redirect("HomePage.aspx");
             }

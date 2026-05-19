@@ -1,45 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.OleDb;
-using System.Linq;
 using System.Web.UI;
 
 namespace ArielProject
 {
-    // שורת הזמנה שנטענת מה-DB עבור חישובי הסטטיסטיקה
-    public class AdminBookingRow
-    {
-        public DateTime InvDate { get; set; }
-        public string InvTime { get; set; }
-        public int NumGuest { get; set; }
-        public string TableType { get; set; }
-        public string Guest { get; set; }
-        public string PhoneNum { get; set; }
-    }
-
-    // פריט עבור גרף בר (תווית + ספירה + רוחב באחוזים)
-    public class BarItem
-    {
-        public string Label { get; set; }
-        public int Count { get; set; }
-        public int Percent { get; set; }
-    }
-
-    // פריט עבור טבלת ההזמנות הקרובות
-    public class UpcomingRow
-    {
-        public string DateStr { get; set; }
-        public string InvTime { get; set; }
-        public string Guest { get; set; }
-        public string PhoneNum { get; set; }
-        public string NumGuest { get; set; }
-        public string TableType { get; set; }
-    }
+    // הוסרו 3 המחלקות שהיו: AdminBookingRow, BarItem, UpcomingRow
+    // הוחלפו ב-DataTable (לנתוני הזמנות + טבלת קרובות)
+    // ובמערכים מקבילים (לנתוני גרפי בר).
 
     public partial class RestaurantAdmin : System.Web.UI.Page
     {
-        string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + AppDomain.CurrentDomain.BaseDirectory + "\\DBusers1.accdb";
-
         protected void Page_Load(object sender, EventArgs e)
         {
             // אימות 1: המשתמש חייב להיות מחובר
@@ -52,7 +24,7 @@ namespace ArielProject
             bool isSysAdmin = Session["Admin"] != null;
             bool isRestAdmin = Session["RestaurantAdmin"] != null;
 
-            // אימות 2: המשתמש חייב להיות מנהל כלשהו - מסעדה או מערכת
+            // אימות 2: רק מנהלים רואים את הדף הזה
             if (!isSysAdmin && !isRestAdmin)
             {
                 Response.Redirect("HomePage.aspx");
@@ -62,16 +34,17 @@ namespace ArielProject
             LblUserName.Text = Session["User"].ToString();
 
             // קביעת מצב הדף:
-            //   - מנהל מערכת עם ?restaurant=X => מצב סטטיסטיקה למסעדה X
-            //   - מנהל מערכת בלי QueryString  => מצב תפריט מנהל
-            //   - מנהל מסעדה                 => מצב סטטיסטיקה למסעדה שלו
+            //   - מנהל מערכת עם ?restaurant=X => סטטיסטיקה למסעדה X
+            //   - מנהל מערכת בלי QueryString  => תפריט מנהל
+            //   - מנהל מסעדה                  => סטטיסטיקה למסעדה שלו
             string restaurantToShow = null;
             bool fromAdminList = false;
 
             if (isSysAdmin)
             {
                 string qRest = Request.QueryString["restaurant"];
-                if (!string.IsNullOrEmpty(qRest))
+                // הוחלף string.IsNullOrEmpty בבדיקה ידנית של null או ""
+                if (qRest != null && qRest != "")
                 {
                     restaurantToShow = qRest;
                     fromAdminList = true;
@@ -93,7 +66,6 @@ namespace ArielProject
 
                 if (fromAdminList)
                 {
-                    // למנהל מערכת חוזרים לרשימת המסעדות
                     BackLink.NavigateUrl = "AllRestaurants.aspx";
                     BackLink.Text = "← חזרה לרשימת המסעדות";
                 }
@@ -113,192 +85,405 @@ namespace ArielProject
             }
         }
 
+        // טוען את כל הסטטיסטיקות והגרפים עבור מסעדה
         private void LoadStatistics(string restaurant)
         {
-            // טוענים פעם אחת את כל ההזמנות של המסעדה, ומחשבים את הסטטיסטיקות בזיכרון
-            List<AdminBookingRow> all = LoadAllBookings(restaurant);
+            // טוענים את כל ההזמנות פעם אחת ל-DataTable, ומשם מחשבים הכל
+            DataTable allBookings = LoadAllBookings(restaurant);
 
             DateTime today = DateTime.Today;
 
-            // ---- KPIs ----
-            int totalCount = all.Count;
-            int upcomingCount = all.Count(b => b.InvDate >= today);
-            int totalPastGuests = all.Where(b => b.InvDate < today).Sum(b => b.NumGuest);
-            double avgGuests = all.Count > 0 ? all.Average(b => b.NumGuest) : 0;
+            // ============ KPIs - מספרים סטטיסטיים ============
+            // הוחלפו פעולות LINQ (Count, Where, Sum, Average) בלולאות for רגילות.
+
+            int totalCount = allBookings.Rows.Count;
+
+            // ספירת הזמנות עתידיות + סכום הסועדים בעבר + סכום כולל לחישוב ממוצע
+            int upcomingCount = 0;
+            int totalPastGuests = 0;
+            int sumAllGuests = 0;
+
+            for (int i = 0; i < allBookings.Rows.Count; i++)
+            {
+                DateTime date = DateTime.Parse(allBookings.Rows[i]["InvDate"].ToString());
+                int guests = int.Parse(allBookings.Rows[i]["NumGuest"].ToString());
+
+                if (date >= today)
+                    upcomingCount++;
+                else
+                    totalPastGuests += guests;
+
+                sumAllGuests += guests;
+            }
+
+            // חישוב ממוצע סועדים להזמנה (אם יש בכלל הזמנות)
+            double avgGuests = 0;
+            if (totalCount > 0)
+            {
+                avgGuests = (double)sumAllGuests / totalCount;
+            }
 
             LblTotalCount.Text = totalCount.ToString();
             LblUpcomingCount.Text = upcomingCount.ToString();
             LblTotalGuests.Text = totalPastGuests.ToString();
             LblAvgGuests.Text = avgGuests.ToString("0.0");
 
-            // ---- גרף 1: התפלגות לפי גודל שולחן ----
-            BindTableTypeChart(all);
-
-            // ---- גרף 2: שעות פופולריות (Top 8) ----
-            BindTimeChart(all);
-
-            // ---- גרף 3: יום בשבוע (כל 7 הימים) ----
-            BindDayOfWeekChart(all);
-
-            // ---- טבלת 5 ההזמנות הקרובות ----
-            BindUpcomingTable(all, today);
+            // ============ גרפים וטבלת הזמנות קרובות ============
+            BindTableTypeChart(allBookings);
+            BindTimeChart(allBookings);
+            BindDayOfWeekChart(allBookings);
+            BindUpcomingTable(allBookings, today);
         }
 
-        private List<AdminBookingRow> LoadAllBookings(string restaurant)
+        // מביא את כל ההזמנות של המסעדה מהמסד.
+        // הוחלף List<AdminBookingRow> ב-DataTable עם 6 עמודות.
+        // הוחלף AppDomain.CurrentDomain.BaseDirectory ב-Server.MapPath.
+        // הוסר בלוק using(...) והוחלפו פרמטרים בשרשור מחרוזות.
+        private DataTable LoadAllBookings(string restaurant)
         {
-            var list = new List<AdminBookingRow>();
+            DataTable dt = new DataTable();
+            dt.Columns.Add("InvDate");
+            dt.Columns.Add("InvTime");
+            dt.Columns.Add("NumGuest");
+            dt.Columns.Add("TableType");
+            dt.Columns.Add("Guest");
+            dt.Columns.Add("PhoneNum");
 
-            using (OleDbConnection con = new OleDbConnection(connStr))
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection con = new OleDbConnection(connStr);
+
+            string sql = "SELECT InvDate, InvTime, NumGuest, TableType, Guest, PhoneNum " +
+                         "FROM MyBooking WHERE Restaurant = '" + restaurant + "'";
+
+            OleDbCommand cmd = new OleDbCommand(sql, con);
+            con.Open();
+            OleDbDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
             {
-                string sql = "SELECT InvDate, InvTime, NumGuest, TableType, Guest, PhoneNum " +
-                             "FROM MyBooking WHERE Restaurant = ?";
-                OleDbCommand cmd = new OleDbCommand(sql, con);
-                cmd.Parameters.AddWithValue("?", restaurant);
-
-                con.Open();
-                OleDbDataReader r = cmd.ExecuteReader();
-
-                while (r.Read())
-                {
-                    list.Add(new AdminBookingRow
-                    {
-                        InvDate = Convert.ToDateTime(r["InvDate"]),
-                        InvTime = r["InvTime"].ToString(),
-                        NumGuest = Convert.ToInt32(r["NumGuest"]),
-                        TableType = r["TableType"].ToString(),
-                        Guest = r["Guest"].ToString(),
-                        PhoneNum = r["PhoneNum"].ToString()
-                    });
-                }
+                dt.Rows.Add(
+                    Convert.ToDateTime(reader["InvDate"]).ToString("yyyy-MM-dd"),
+                    reader["InvTime"].ToString(),
+                    reader["NumGuest"].ToString(),
+                    reader["TableType"].ToString(),
+                    reader["Guest"].ToString(),
+                    reader["PhoneNum"].ToString()
+                );
             }
+            con.Close();
 
-            return list;
+            return dt;
         }
 
-        private void BindTableTypeChart(List<AdminBookingRow> all)
+        // גרף 1: התפלגות לפי גודל שולחן (קטן/בינוני/גדול)
+        // הוחלפו List<BarItem> + LINQ במערכים מקבילים + לולאות for.
+        private void BindTableTypeChart(DataTable allBookings)
         {
-            // משאירים סדר קבוע: קטן, בינוני, גדול
+            // 3 קטגוריות בסדר קבוע
             string[] order = { "Small", "Medium", "Large" };
             string[] labels = { "קטן (עד 2)", "בינוני (3-4)", "גדול (5+)" };
+            int[] counts = new int[3];
+            int[] percents = new int[3];
 
-            var bars = new List<BarItem>();
+            // לכל קטגוריה - סופרים כמה הזמנות יש איתה
             for (int i = 0; i < order.Length; i++)
             {
-                int count = all.Count(b => b.TableType == order[i]);
-                bars.Add(new BarItem { Label = labels[i], Count = count });
+                int count = 0;
+                for (int j = 0; j < allBookings.Rows.Count; j++)
+                {
+                    if (allBookings.Rows[j]["TableType"].ToString() == order[i])
+                        count++;
+                }
+                counts[i] = count;
             }
 
-            ApplyPercentages(bars);
+            ApplyPercentages(counts, percents);
 
-            if (bars.All(b => b.Count == 0))
+            // בודקים אם כל הספירות הן 0 (אין נתונים)
+            bool allZero = true;
+            for (int i = 0; i < counts.Length; i++)
             {
-                RepeaterTableTypes.Visible = false;
+                if (counts[i] > 0) allZero = false;
+            }
+
+            if (allZero)
+            {
+                LblTableTypesChart.Visible = false;
                 PnlEmptyTable.Visible = true;
             }
             else
             {
-                RepeaterTableTypes.DataSource = bars;
-                RepeaterTableTypes.DataBind();
+                LblTableTypesChart.Text = BuildBarChartHtml(labels, counts, percents, "");
             }
         }
 
-        private void BindTimeChart(List<AdminBookingRow> all)
+        // גרף 2: 8 השעות הפופולריות ביותר
+        // הוחלף LINQ של GroupBy/OrderByDescending/Take בקוד פשוט יותר.
+        private void BindTimeChart(DataTable allBookings)
         {
-            // 8 השעות הפופולריות ביותר
-            var bars = all.GroupBy(b => b.InvTime)
-                          .Select(g => new BarItem { Label = g.Key, Count = g.Count() })
-                          .OrderByDescending(b => b.Count)
-                          .ThenBy(b => b.Label)
-                          .Take(8)
-                          .ToList();
+            // שלב 1: מעבר על ההזמנות ובניית רשימת שעות ייחודיות עם ספירה
+            List<string> uniqueTimes = new List<string>();
+            List<int> timeCounts = new List<int>();
 
-            ApplyPercentages(bars);
-
-            if (bars.Count == 0)
+            for (int i = 0; i < allBookings.Rows.Count; i++)
             {
-                RepeaterTimes.Visible = false;
+                string time = allBookings.Rows[i]["InvTime"].ToString();
+
+                // מחפשים אם השעה כבר נמצאת ברשימה
+                int foundIdx = -1;
+                for (int j = 0; j < uniqueTimes.Count; j++)
+                {
+                    if (uniqueTimes[j] == time)
+                    {
+                        foundIdx = j;
+                    }
+                }
+
+                if (foundIdx == -1)
+                {
+                    // שעה חדשה - מוסיפים עם ספירה 1
+                    uniqueTimes.Add(time);
+                    timeCounts.Add(1);
+                }
+                else
+                {
+                    // שעה קיימת - מגדילים את הספירה
+                    timeCounts[foundIdx] = timeCounts[foundIdx] + 1;
+                }
+            }
+
+            // שלב 2: מיון בועות לפי ספירה (מהגדול לקטן). אם אותה ספירה - לפי שעה (מהקטנה לגדולה).
+            int n = uniqueTimes.Count;
+            for (int i = 0; i < n - 1; i++)
+            {
+                for (int j = 0; j < n - 1 - i; j++)
+                {
+                    bool shouldSwap = false;
+                    if (timeCounts[j] < timeCounts[j + 1])
+                    {
+                        shouldSwap = true;
+                    }
+                    else if (timeCounts[j] == timeCounts[j + 1])
+                    {
+                        if (uniqueTimes[j].CompareTo(uniqueTimes[j + 1]) > 0)
+                            shouldSwap = true;
+                    }
+
+                    if (shouldSwap)
+                    {
+                        string tmpT = uniqueTimes[j];
+                        uniqueTimes[j] = uniqueTimes[j + 1];
+                        uniqueTimes[j + 1] = tmpT;
+
+                        int tmpC = timeCounts[j];
+                        timeCounts[j] = timeCounts[j + 1];
+                        timeCounts[j + 1] = tmpC;
+                    }
+                }
+            }
+
+            // שלב 3: לוקחים רק את 8 הראשונים (אם יש פחות - לוקחים את כולם)
+            int takeCount = uniqueTimes.Count;
+            if (takeCount > 8) takeCount = 8;
+
+            string[] labels = new string[takeCount];
+            int[] counts = new int[takeCount];
+            int[] percents = new int[takeCount];
+
+            for (int i = 0; i < takeCount; i++)
+            {
+                labels[i] = uniqueTimes[i];
+                counts[i] = timeCounts[i];
+            }
+
+            ApplyPercentages(counts, percents);
+
+            if (takeCount == 0)
+            {
+                LblTimesChart.Visible = false;
                 PnlEmptyTimes.Visible = true;
             }
             else
             {
-                RepeaterTimes.DataSource = bars;
-                RepeaterTimes.DataBind();
+                LblTimesChart.Text = BuildBarChartHtml(labels, counts, percents, "purple");
             }
         }
 
-        private void BindDayOfWeekChart(List<AdminBookingRow> all)
+        // גרף 3: התפלגות לפי יום בשבוע (ראשון עד שבת)
+        // הוחלף DayOfWeek enum במספרים שלמים (0=ראשון, 6=שבת).
+        private void BindDayOfWeekChart(DataTable allBookings)
         {
-            // סדר ימים: ראשון -> שבת
-            DayOfWeek[] order = { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday,
-                                  DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday };
             string[] labels = { "ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת" };
+            int[] counts = new int[7];
+            int[] percents = new int[7];
 
-            var bars = new List<BarItem>();
-            for (int i = 0; i < order.Length; i++)
+            for (int i = 0; i < allBookings.Rows.Count; i++)
             {
-                int count = all.Count(b => b.InvDate.DayOfWeek == order[i]);
-                bars.Add(new BarItem { Label = labels[i], Count = count });
+                DateTime date = DateTime.Parse(allBookings.Rows[i]["InvDate"].ToString());
+                // (int) ממיר את DayOfWeek למספר: 0=ראשון, 1=שני, ..., 6=שבת
+                int dayNum = (int)date.DayOfWeek;
+                counts[dayNum] = counts[dayNum] + 1;
             }
 
-            ApplyPercentages(bars);
+            ApplyPercentages(counts, percents);
 
-            RepeaterDays.DataSource = bars;
-            RepeaterDays.DataBind();
+            LblDaysChart.Text = BuildBarChartHtml(labels, counts, percents, "green");
         }
 
-        private void BindUpcomingTable(List<AdminBookingRow> all, DateTime today)
+        // טבלת 5 ההזמנות הקרובות.
+        // הוחלף Repeater + LINQ ב-GridView + לולאת מיון בועות.
+        private void BindUpcomingTable(DataTable allBookings, DateTime today)
         {
-            var upcoming = all.Where(b => b.InvDate >= today)
-                              .OrderBy(b => b.InvDate)
-                              .ThenBy(b => b.InvTime)
-                              .Take(5)
-                              .Select(b => new UpcomingRow
-                              {
-                                  DateStr = b.InvDate.ToString("dd/MM/yyyy"),
-                                  InvTime = b.InvTime,
-                                  Guest = b.Guest,
-                                  PhoneNum = b.PhoneNum,
-                                  NumGuest = b.NumGuest.ToString(),
-                                  TableType = TranslateTableType(b.TableType)
-                              })
-                              .ToList();
+            // שלב 1: סינון רק הזמנות עתידיות (תאריך >= היום) למערכים מקבילים
+            List<DateTime> dates = new List<DateTime>();
+            List<string> times = new List<string>();
+            List<string> guests = new List<string>();
+            List<string> phones = new List<string>();
+            List<string> nums = new List<string>();
+            List<string> tableTypes = new List<string>();
 
-            if (upcoming.Count == 0)
+            for (int i = 0; i < allBookings.Rows.Count; i++)
             {
-                RepeaterUpcoming.Visible = false;
+                DateTime date = DateTime.Parse(allBookings.Rows[i]["InvDate"].ToString());
+                if (date >= today)
+                {
+                    dates.Add(date);
+                    times.Add(allBookings.Rows[i]["InvTime"].ToString());
+                    guests.Add(allBookings.Rows[i]["Guest"].ToString());
+                    phones.Add(allBookings.Rows[i]["PhoneNum"].ToString());
+                    nums.Add(allBookings.Rows[i]["NumGuest"].ToString());
+                    tableTypes.Add(allBookings.Rows[i]["TableType"].ToString());
+                }
+            }
+
+            // שלב 2: מיון בועות לפי תאריך (מהקרוב לרחוק) ואז לפי שעה
+            int n = dates.Count;
+            for (int i = 0; i < n - 1; i++)
+            {
+                for (int j = 0; j < n - 1 - i; j++)
+                {
+                    bool shouldSwap = false;
+                    if (dates[j] > dates[j + 1])
+                    {
+                        shouldSwap = true;
+                    }
+                    else if (dates[j] == dates[j + 1])
+                    {
+                        if (times[j].CompareTo(times[j + 1]) > 0)
+                            shouldSwap = true;
+                    }
+
+                    if (shouldSwap)
+                    {
+                        // החלפת כל ששת המערכים יחד
+                        DateTime tmpD = dates[j]; dates[j] = dates[j + 1]; dates[j + 1] = tmpD;
+
+                        string tmp;
+                        tmp = times[j]; times[j] = times[j + 1]; times[j + 1] = tmp;
+                        tmp = guests[j]; guests[j] = guests[j + 1]; guests[j + 1] = tmp;
+                        tmp = phones[j]; phones[j] = phones[j + 1]; phones[j + 1] = tmp;
+                        tmp = nums[j]; nums[j] = nums[j + 1]; nums[j + 1] = tmp;
+                        tmp = tableTypes[j]; tableTypes[j] = tableTypes[j + 1]; tableTypes[j + 1] = tmp;
+                    }
+                }
+            }
+
+            // שלב 3: לוקחים רק את 5 הראשונים
+            int takeCount = dates.Count;
+            if (takeCount > 5) takeCount = 5;
+
+            // בונים DataTable להצגה ב-GridView
+            DataTable upcoming = new DataTable();
+            upcoming.Columns.Add("תאריך");
+            upcoming.Columns.Add("שעה");
+            upcoming.Columns.Add("שם הסועד");
+            upcoming.Columns.Add("טלפון");
+            upcoming.Columns.Add("סועדים");
+            upcoming.Columns.Add("שולחן");
+
+            for (int i = 0; i < takeCount; i++)
+            {
+                upcoming.Rows.Add(
+                    dates[i].ToString("dd/MM/yyyy"),
+                    times[i],
+                    guests[i],
+                    phones[i],
+                    nums[i],
+                    TranslateTableType(tableTypes[i])
+                );
+            }
+
+            if (takeCount == 0)
+            {
+                GridView1.Visible = false;
                 PnlEmptyUpcoming.Visible = true;
             }
             else
             {
-                RepeaterUpcoming.DataSource = upcoming;
-                RepeaterUpcoming.DataBind();
+                GridView1.DataSource = upcoming;
+                GridView1.DataBind();
             }
         }
 
-        // ממיר את ה-Count של כל בר ל-Percent רוחב יחסי, ביחס לערך המקסימלי
-        private void ApplyPercentages(List<BarItem> bars)
+        // ממיר את הספירות לאחוזים יחסית לערך המקסימלי.
+        // הוחלפו LINQ של Max ו-foreach במערכים פשוטים עם לולאת for.
+        private void ApplyPercentages(int[] counts, int[] percents)
         {
-            if (bars.Count == 0) return;
-            int max = bars.Max(b => b.Count);
+            // מציאת הערך המקסימלי בלולאה
+            int max = 0;
+            for (int i = 0; i < counts.Length; i++)
+            {
+                if (counts[i] > max) max = counts[i];
+            }
+
+            // אם הכל אפס - לא יוצרים אחוזים
             if (max == 0) return;
 
-            foreach (var b in bars)
+            // חישוב אחוזים: כל ערך כיחס למקסימום, מוכפל ב-100
+            for (int i = 0; i < counts.Length; i++)
             {
-                b.Percent = b.Count * 100 / max;
-                // רוחב מינימלי כדי שלא יחתך לגמרי באחוזים נמוכים מאוד
-                if (b.Count > 0 && b.Percent < 3) b.Percent = 3;
+                percents[i] = counts[i] * 100 / max;
+                // רוחב מינימלי כדי שהבר לא ייעלם לחלוטין באחוזים נמוכים
+                if (counts[i] > 0 && percents[i] < 3) percents[i] = 3;
             }
         }
 
+        // בונה את ה-HTML של גרף הברים על-ידי שרשור מחרוזות.
+        // זה החליף את ה-Repeater שיצר את הברים אוטומטית עם templates.
+        // colorClass: "" (זהב), "purple", "green" - לצביעת הברים בצבעים שונים.
+        private string BuildBarChartHtml(string[] labels, int[] counts, int[] percents, string colorClass)
+        {
+            // מחליטים על המחלקה של ה-fill לפי הצבע המבוקש
+            string fillClass = "bar-fill";
+            if (colorClass != "")
+                fillClass = fillClass + " " + colorClass;
+
+            string html = "";
+            for (int i = 0; i < labels.Length; i++)
+            {
+                html = html + "<div class='bar-row'>";
+                html = html + "<div class='bar-label'>" + labels[i] + "</div>";
+                html = html + "<div class='bar-track'>";
+                html = html + "<div class='" + fillClass + "' style='width: " + percents[i] + "%;'></div>";
+                html = html + "</div>";
+                html = html + "<div class='bar-value'>" + counts[i] + "</div>";
+                html = html + "</div>";
+            }
+            return html;
+        }
+
+        // ממיר את שם סוג השולחן מאנגלית לעברית.
+        // הוחלף switch ב-if/else if.
         private string TranslateTableType(string type)
         {
-            switch (type)
-            {
-                case "Small": return "קטן";
-                case "Medium": return "בינוני";
-                case "Large": return "גדול";
-                default: return type;
-            }
+            if (type == "Small")
+                return "קטן";
+            else if (type == "Medium")
+                return "בינוני";
+            else if (type == "Large")
+                return "גדול";
+            else
+                return type;
         }
     }
 }

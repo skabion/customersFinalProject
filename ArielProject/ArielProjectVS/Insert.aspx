@@ -25,68 +25,36 @@
                 <p>פתחו חשבון חדש ב-EatIt</p>
             </div>
 
-            <%-- שונה: input-group → auth-input-group, icon → auth-icon --%>
+            <%-- הוחלפו כל ה-RegularExpressionValidator וה-RequiredFieldValidator
+                 (שדרשו תחביר רגולרי מתקדם) בבדיקה ידנית בקוד C#.
+                 כל שדה מקבל Label להצגת הודעת שגיאה (אם יש). --%>
+
             <!-- שם מלא -->
             <div class="auth-input-group">
                 <span class="auth-icon">👤</span>
                 <asp:TextBox ID="SignUp_FullName" runat="server" placeholder="שם מלא (באנגלית)"></asp:TextBox>
             </div>
-            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server"
-                ControlToValidate="SignUp_FullName"
-                ErrorMessage="לא הוזן שם מלא"
-                ValidationGroup="SignUp"
-                Display="Dynamic"
-                CssClass="validator-msg" />
-            <asp:RegularExpressionValidator ID="SignUp_FullName_RegularExpressionValidator" runat="server"
-                ControlToValidate="SignUp_FullName"
-                ValidationExpression="^[A-Z][a-zA-Z]*(\s+[A-Z][a-zA-Z]*)+$"
-                ErrorMessage="שם לא תקין: אותיות אנגלית בלבד, לפחות 2 מילים, כל אחת מתחילה באות גדולה"
-                ValidationGroup="SignUp"
-                Display="Dynamic"
-                CssClass="validator-msg" />
+            <asp:Label ID="LblNameError" runat="server" CssClass="validator-msg"></asp:Label>
 
             <!-- סיסמה -->
             <div class="auth-input-group">
                 <span class="auth-icon">🔒</span>
                 <asp:TextBox ID="SignUp_Password" runat="server" TextMode="Password" placeholder="סיסמה"></asp:TextBox>
             </div>
-            <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server"
-                ControlToValidate="SignUp_Password"
-                ErrorMessage="לא הוזנה סיסמה"
-                ValidationGroup="SignUp"
-                Display="Dynamic"
-                CssClass="validator-msg" />
-            <asp:RegularExpressionValidator ID="SignUp_Password_RegularExpressionValidator" runat="server"
-                ControlToValidate="SignUp_Password"
-                ValidationExpression="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&])[A-Za-z\d!@#$%^&]{6,}$"
-                ErrorMessage="סיסמה חלשה מדי: דרושים אות גדולה, אות קטנה, ספרה, תו מיוחד, ולפחות 6 תווים"
-                ValidationGroup="SignUp"
-                Display="Dynamic"
-                CssClass="validator-msg" />
+            <asp:Label ID="LblPasswordError" runat="server" CssClass="validator-msg"></asp:Label>
 
             <!-- טלפון -->
             <div class="auth-input-group">
                 <span class="auth-icon">📱</span>
                 <asp:TextBox ID="SignUp_Phone" runat="server" placeholder="טלפון (10 ספרות)"></asp:TextBox>
             </div>
-            <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server"
-                ControlToValidate="SignUp_Phone"
-                ErrorMessage="לא הוזן טלפון"
-                ValidationGroup="SignUp"
-                Display="Dynamic"
-                CssClass="validator-msg" />
-            <asp:RegularExpressionValidator ID="SignUp_Phone_RegularExpressionValidator" runat="server"
-                ControlToValidate="SignUp_Phone"
-                ValidationExpression="^05[02345]\d{7}$"
-                ErrorMessage="מספר טלפון לא תקין: 10 ספרות שמתחילות ב-050, 052, 053, 054 או 055"
-                ValidationGroup="SignUp"
-                Display="Dynamic"
-                CssClass="validator-msg" />
+            <asp:Label ID="LblPhoneError" runat="server" CssClass="validator-msg"></asp:Label>
 
             <!-- אזור -->
             <span class="section-title">📍 אזור מגורים</span>
             <div class="area-row">
-                <asp:DropDownList ID="DropDownList1" runat="server" OnSelectedIndexChanged="DropDownListArea_SelectedIndexChanged">
+                <%-- הוסרה התכונה OnSelectedIndexChanged כי ההאזנה ב-cs היתה ריקה ולא עשתה כלום --%>
+                <asp:DropDownList ID="DropDownList1" runat="server">
                 </asp:DropDownList>
             </div>
 
@@ -109,7 +77,9 @@
                 <asp:CheckBox ID="CheckBoxMilk" runat="server" Text="חלב" />
             </div>
 
-            <asp:Button ID="AddUser" runat="server" Text="✨ הירשם עכשיו" OnClick="AddUser_Click" ValidationGroup="SignUp" CssClass="signup-btn" />
+            <%-- הוסר ValidationGroup="SignUp" כי אין יותר Validators
+                 הבדיקה מתבצעת בקוד C# בפונקציה AddUser_Click --%>
+            <asp:Button ID="AddUser" runat="server" Text="✨ הירשם עכשיו" OnClick="AddUser_Click" CssClass="signup-btn" />
 
             <div class="extra-links">
                 כבר יש לכם חשבון? <a href="Login.aspx">התחברו כאן</a>

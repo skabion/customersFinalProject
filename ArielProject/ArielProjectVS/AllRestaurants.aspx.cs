@@ -1,23 +1,14 @@
 using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Data.OleDb;
-using System.Web;
 using System.Web.UI;
 
 namespace ArielProject
 {
-    public class RestaurantCard
-    {
-        public string Name { get; set; }
-        public string EncodedName { get; set; }   // לכתובת ה-URL (כדי שרווחים יקודדו)
-        public string Region { get; set; }
-        public string FoodType { get; set; }
-    }
+    // הוסרה המחלקה RestaurantCard עם properties - הוחלפה ב-DataTable
 
     public partial class AllRestaurants : System.Web.UI.Page
     {
-        string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + AppDomain.CurrentDomain.BaseDirectory + "\\DBusers1.accdb";
-
         protected void Page_Load(object sender, EventArgs e)
         {
             // אימות 1: המשתמש חייב להיות מחובר
@@ -42,41 +33,64 @@ namespace ArielProject
             }
         }
 
+        // טוען את כל המסעדות מהמסד ומציג אותן ב-GridView
         private void LoadRestaurants()
         {
-            var list = new List<RestaurantCard>();
+            // הוחלף AppDomain.CurrentDomain.BaseDirectory ב-Server.MapPath -
+            // סגנון אחיד לכל הפרוייקט.
+            // הוסר גם בלוק using(...) - חיבור רגיל שנסגר ידנית.
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection con = new OleDbConnection(connStr);
 
-            using (OleDbConnection con = new OleDbConnection(connStr))
+            string sql = "SELECT Restaurants, Region, FoodType FROM MyRestaurants ORDER BY Restaurants";
+            OleDbCommand cmd = new OleDbCommand(sql, con);
+            con.Open();
+            OleDbDataReader reader = cmd.ExecuteReader();
+
+            // הוחלפה List<RestaurantCard> ב-DataTable עם 3 עמודות.
+            // לא צריך לשמור EncodedName - נעשה את הקידוד בלחיצה על הכפתור.
+            DataTable dt = new DataTable();
+            dt.Columns.Add("שם מסעדה");
+            dt.Columns.Add("אזור");
+            dt.Columns.Add("סוג מטבח");
+
+            // קוראים כל שורה מהמסד ומוסיפים לטבלה.
+            // הוסר אתחול אובייקט (new X { ... }) - dt.Rows.Add במקום.
+            while (reader.Read())
             {
-                string sql = "SELECT Restaurants, Region, FoodType FROM MyRestaurants ORDER BY Restaurants";
-                OleDbCommand cmd = new OleDbCommand(sql, con);
+                string name = reader["Restaurants"].ToString();
+                string region = reader["Region"].ToString();
+                string foodType = reader["FoodType"].ToString();
 
-                con.Open();
-                OleDbDataReader r = cmd.ExecuteReader();
-
-                while (r.Read())
-                {
-                    string name = r["Restaurants"].ToString();
-                    list.Add(new RestaurantCard
-                    {
-                        Name = name,
-                        EncodedName = HttpUtility.UrlEncode(name),
-                        Region = r["Region"].ToString(),
-                        FoodType = r["FoodType"].ToString()
-                    });
-                }
+                dt.Rows.Add(name, region, foodType);
             }
+            con.Close();
 
-            if (list.Count == 0)
+            // אם אין מסעדות - מציגים פאנל ריק
+            if (dt.Rows.Count == 0)
             {
-                RepeaterRestaurants.Visible = false;
+                GridView1.Visible = false;
                 PnlEmpty.Visible = true;
             }
             else
             {
-                RepeaterRestaurants.DataSource = list;
-                RepeaterRestaurants.DataBind();
+                GridView1.DataSource = dt;
+                GridView1.DataBind();
             }
+        }
+
+        // לחיצה על מסעדה - מעבירים את המנהל לדף הסטטיסטיקות של המסעדה.
+        // מחליף את ה-Repeater עם הקישור Eval ב-GridView עם כפתור Select.
+        protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Cells[0] = כפתור הבחירה, Cells[1] = שם המסעדה
+            string name = GridView1.SelectedRow.Cells[1].Text;
+
+            // קידוד פשוט של רווחים לפורמט בטוח ל-URL (במקום HttpUtility.UrlEncode).
+            // לדוגמה: "La Lush" יהפוך ל-"La%20Lush" כדי שה-URL לא יישבר.
+            string encoded = name.Replace(" ", "%20");
+
+            Response.Redirect("RestaurantAdmin.aspx?restaurant=" + encoded);
         }
     }
 }

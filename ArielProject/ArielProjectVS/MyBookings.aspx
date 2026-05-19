@@ -28,24 +28,18 @@
         <div class="gold-divider"></div>
 
         <div class="bookings-container">
-            <asp:Repeater ID="RepeaterBookings" runat="server">
-                <ItemTemplate>
-                    <div class="booking-card">
-                        <div class="booking-info">
-                            <div class="booking-restaurant">🍽️ <%# Eval("Restaurant") %></div>
-                            <div class="booking-details">
-                                <span><span class="label">תאריך:</span> <%# Eval("DateStr") %></span>
-                                <span><span class="label">שעה:</span> <%# Eval("InvTime") %></span>
-                                <span><span class="label">סועדים:</span> <%# Eval("NumGuest") %></span>
-                                <span><span class="label">סוג שולחן:</span> <%# Eval("TableType") %></span>
-                            </div>
-                        </div>
-                        <div class="booking-actions">
-                            <a href='<%# "Update.aspx?date=" + Eval("DateStr") + "&time=" + Eval("InvTime") %>' class="btn-edit">✏️ ערוך הזמנה</a>
-                        </div>
-                    </div>
-                </ItemTemplate>
-            </asp:Repeater>
+            <%-- הוחלף ה-Repeater עם <ItemTemplate> ו-Eval() (לא נלמדים בתיכון)
+                 ב-GridView פשוט עם AutoGenerateColumns שמציג את כל עמודות
+                 ה-DataTable באופן אוטומטי. כפתור הבחירה (Select) מוסיף קישור
+                 לכל שורה כדי לערוך את ההזמנה. --%>
+            <asp:GridView ID="GridView1" runat="server"
+                AutoGenerateColumns="True"
+                AutoGenerateSelectButton="True"
+                SelectText="✏️ ערוך"
+                OnSelectedIndexChanged="GridView1_SelectedIndexChanged"
+                Width="100%"
+                CssClass="times-grid">
+            </asp:GridView>
 
             <asp:Panel ID="PnlEmpty" runat="server" Visible="false">
                 <div class="empty-message">

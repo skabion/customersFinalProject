@@ -85,9 +85,9 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.Label LblAvgGuests;
 
         /// <summary>
-        /// RepeaterTableTypes control.
+        /// LblTableTypesChart control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater RepeaterTableTypes;
+        protected global::System.Web.UI.WebControls.Label LblTableTypesChart;
 
         /// <summary>
         /// PnlEmptyTable control.
@@ -95,9 +95,9 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.Panel PnlEmptyTable;
 
         /// <summary>
-        /// RepeaterTimes control.
+        /// LblTimesChart control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater RepeaterTimes;
+        protected global::System.Web.UI.WebControls.Label LblTimesChart;
 
         /// <summary>
         /// PnlEmptyTimes control.
@@ -105,14 +105,14 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.Panel PnlEmptyTimes;
 
         /// <summary>
-        /// RepeaterDays control.
+        /// LblDaysChart control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater RepeaterDays;
+        protected global::System.Web.UI.WebControls.Label LblDaysChart;
 
         /// <summary>
-        /// RepeaterUpcoming control.
+        /// GridView1 control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater RepeaterUpcoming;
+        protected global::System.Web.UI.WebControls.GridView GridView1;
 
         /// <summary>
         /// PnlEmptyUpcoming control.

@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Data.OleDb;
-using System.Data.SqlTypes;
-using System.Drawing;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+// הוסרו usings מיותרים: System.Collections.Generic, System.Data.SqlTypes,
+// System.Drawing, System.Linq, System.Web, System.Web.UI.WebControls
 
 namespace ArielProject
 {
@@ -16,20 +12,24 @@ namespace ArielProject
         {
             if (!IsPostBack)
             {
+                // נורמליזציה: Server.MapPath עם שם הקובץ ישירות
                 OleDbConnection con = new OleDbConnection();
-                con.ConnectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("") + "\\DBusers1.accdb";
+                con.ConnectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
                 con.Open();
 
-               string strsql = "SELECT * FROM MyRestaurants ";
+                string strsql = "SELECT * FROM MyRestaurants";
 
                 OleDbCommand Cmd = new OleDbCommand(strsql, con);
                 OleDbDataReader dr1 = Cmd.ExecuteReader();
-                dr1.Read();
+
+                // תיקון באג: הוסרה הקריאה ל-dr1.Read() שהיתה כאן.
+                // הקריאה הזו הזיזה את הסמן שורה אחת קדימה לפני ה-DataBind,
+                // ולכן המסעדה הראשונה נדלגה. DataBind() כבר קורא את כל
+                // השורות בעצמו - אין צורך לקרוא לפניו.
                 DataList1.DataSource = dr1;
                 DataList1.DataBind();
 
                 con.Close();
-
             }
         }
     }

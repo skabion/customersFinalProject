@@ -1,98 +1,23 @@
 using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Data.OleDb;
-using System.Linq;
-using System.Text;
 using System.Web.UI;
 
 namespace ArielProject
 {
-    // שורת משתמש שנטענת מ-DB
-    public class UserStatRow
-    {
-        public string Name { get; set; }
-        public string Phone { get; set; }
-        public string Area { get; set; }              // ערך גולמי: Darom / Merkaz / Tzafon
-        public string AreaHebrew { get; set; }
-        public bool Vegetarian { get; set; }
-        public bool Vegan { get; set; }
-        public bool Kosher { get; set; }
-        public bool Gluten { get; set; }
-        public bool Peanuts { get; set; }
-        public bool TreeNuts { get; set; }
-        public bool Fish { get; set; }
-        public bool Sesame { get; set; }
-        public bool Milk { get; set; }
-        public bool IsAdmin { get; set; }
-        public bool IsRestAdmin { get; set; }
-        public string RestaurantName { get; set; }    // אם הוא מנהל מסעדה - שם המסעדה
-
-        // HTML מוכן להזרקה ב-Repeater
-        public string TagsHtml { get; set; }
-        public string RoleTag { get; set; }
-
-        // עוזרי סינון
-        public bool HasDiet(string key)
-        {
-            switch (key)
-            {
-                case "Vegetarian": return Vegetarian;
-                case "Vegan": return Vegan;
-                case "Kosher": return Kosher;
-                default: return false;
-            }
-        }
-
-        public bool HasAllergy(string key)
-        {
-            switch (key)
-            {
-                case "Gluten": return Gluten;
-                case "Peanuts": return Peanuts;
-                case "TreeNuts": return TreeNuts;
-                case "Fish": return Fish;
-                case "Sesame": return Sesame;
-                case "Milk": return Milk;
-                default: return false;
-            }
-        }
-
-        public bool MatchesRole(string key)
-        {
-            switch (key)
-            {
-                case "Admin": return IsAdmin;
-                case "RestAdmin": return IsRestAdmin && !IsAdmin;
-                case "User": return !IsAdmin && !IsRestAdmin;
-                default: return true;
-            }
-        }
-
-        public bool HasAnyAllergy
-        {
-            get { return Gluten || Peanuts || TreeNuts || Fish || Sesame || Milk; }
-        }
-    }
-
-    public class StatBar
-    {
-        public string Label { get; set; }
-        public int Count { get; set; }
-        public int Percent { get; set; }
-    }
+    // הוסרו 2 המחלקות שהיו: UserStatRow (עם 16 properties + 4 מתודות!) ו-StatBar.
+    // הוחלפו ב-DataTable עם 18 עמודות ובמערכים מקבילים.
 
     public partial class UserStats : System.Web.UI.Page
     {
-        string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + AppDomain.CurrentDomain.BaseDirectory + "\\DBusers1.accdb";
-
         protected void Page_Load(object sender, EventArgs e)
         {
+            // אימות התחברות + הרשאה (רק מנהל מערכת)
             if (Session["User"] == null)
             {
                 Response.Redirect("Login.aspx");
                 return;
             }
-            // רק מנהל מערכת רואה את הדף הזה
             if (Session["Admin"] == null)
             {
                 Response.Redirect("HomePage.aspx");
@@ -101,245 +26,458 @@ namespace ArielProject
 
             LblUserName.Text = Session["User"].ToString();
 
-            // טוענים את כל המשתמשים, מחשבים סטטיסטיקה כללית, ומציגים רשימה מסוננת
-            List<UserStatRow> all = LoadAllUsers();
-            BindKPIs(all);
-            BindAreaChart(all);
-            BindDietChart(all);
-            BindAllergyChart(all);
-            BindFilteredList(all);
+            // טוענים את כל המשתמשים פעם אחת ומחשבים סטטיסטיקה + רשימה מסוננת
+            DataTable allUsers = LoadAllUsers();
+            BindKPIs(allUsers);
+            BindAreaChart(allUsers);
+            BindDietChart(allUsers);
+            BindAllergyChart(allUsers);
+            BindFilteredUserList(allUsers);
         }
 
-        protected void Filter_Changed(object sender, EventArgs e)
-        {
-            // ה-Page_Load כבר טיפל בכל - אין צורך לעשות שום דבר נוסף
-            // (נשמר כאן כדי שה-AutoPostBack של הדרופדאונס יקרא פונקציה תקינה)
-        }
+        // event handlers של הפילטרים - לא צריכים לעשות כלום,
+        // כי Page_Load כבר רץ בכל PostBack ומחשב הכל מחדש עם הערכים העדכניים.
+        protected void Filter_Changed(object sender, EventArgs e) { }
+        protected void BtnFilter_Click(object sender, EventArgs e) { }
 
-        protected void BtnFilter_Click(object sender, EventArgs e)
-        {
-            // Page_Load מטפל בכל - הכפתור רק מפעיל PostBack
-        }
-
+        // איפוס פילטרים והצגת כל המשתמשים
         protected void BtnClear_Click(object sender, EventArgs e)
         {
-            // איפוס כל הפילטרים
             DdlArea.SelectedIndex = 0;
             DdlDiet.SelectedIndex = 0;
             DdlAllergy.SelectedIndex = 0;
             DdlRole.SelectedIndex = 0;
             TxtName.Text = "";
 
-            // טוענים מחדש את הנתונים בלי סינון
-            List<UserStatRow> all = LoadAllUsers();
-            BindFilteredList(all);
+            // טוענים מחדש את הנתונים ובונים את הרשימה (פילטרים מאופסים)
+            DataTable allUsers = LoadAllUsers();
+            BindFilteredUserList(allUsers);
         }
 
-        // ===== טעינה מה-DB =====
-
-        private List<UserStatRow> LoadAllUsers()
+        // טוען את כל המשתמשים מהמסד אל DataTable עם 18 עמודות.
+        // הוחלף AppDomain ב-Server.MapPath, הוסר בלוק using(...),
+        // הוחלפו ערכי DBNull בקריאות ל-ToString() (שמחזירה "" עבור NULL).
+        private DataTable LoadAllUsers()
         {
-            var list = new List<UserStatRow>();
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Name");
+            dt.Columns.Add("Phone");
+            dt.Columns.Add("Area");
+            dt.Columns.Add("AreaHebrew");
+            dt.Columns.Add("Vegetarian");
+            dt.Columns.Add("Vegan");
+            dt.Columns.Add("Kosher");
+            dt.Columns.Add("Gluten");
+            dt.Columns.Add("Peanuts");
+            dt.Columns.Add("TreeNuts");
+            dt.Columns.Add("Fish");
+            dt.Columns.Add("Sesame");
+            dt.Columns.Add("Milk");
+            dt.Columns.Add("IsAdmin");
+            dt.Columns.Add("IsRestAdmin");
+            dt.Columns.Add("RestaurantName");
+            dt.Columns.Add("TagsHtml");      // HTML של תגיות תזונה ואלרגיות
+            dt.Columns.Add("RoleTag");        // HTML של תגית התפקיד
 
-            using (OleDbConnection con = new OleDbConnection(connStr))
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection con = new OleDbConnection(connStr);
+
+            string sql = "SELECT MyFullName, MyPhoneNumber, Area, " +
+                         "Vegetarian, Vegan, Kosher, " +
+                         "Gluten, Peanuts, TreeNuts, Fish, Sesame, Milk, " +
+                         "RestaurantAdmin, Admin " +
+                         "FROM MyUsers ORDER BY MyFullName";
+
+            OleDbCommand cmd = new OleDbCommand(sql, con);
+            con.Open();
+            OleDbDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
             {
-                string sql = "SELECT MyFullName, MyPhoneNumber, Area, " +
-                             "Vegetarian, Vegan, Kosher, " +
-                             "Gluten, Peanuts, TreeNuts, Fish, Sesame, Milk, " +
-                             "RestaurantAdmin, Admin " +
-                             "FROM MyUsers ORDER BY MyFullName";
-                OleDbCommand cmd = new OleDbCommand(sql, con);
+                // קוראים את הערכים מהמסד וממירים ל-"כן"/"לא"
+                string name = reader["MyFullName"].ToString().Trim();
+                string phone = reader["MyPhoneNumber"].ToString().Trim();
+                string area = reader["Area"].ToString().Trim();
+                string areaHebrew = TranslateArea(area);
 
-                con.Open();
-                OleDbDataReader r = cmd.ExecuteReader();
+                string vegetarian = IsYes(reader["Vegetarian"]);
+                string vegan = IsYes(reader["Vegan"]);
+                string kosher = IsYes(reader["Kosher"]);
+                string gluten = IsYes(reader["Gluten"]);
+                string peanuts = IsYes(reader["Peanuts"]);
+                string treeNuts = IsYes(reader["TreeNuts"]);
+                string fish = IsYes(reader["Fish"]);
+                string sesame = IsYes(reader["Sesame"]);
+                string milk = IsYes(reader["Milk"]);
 
-                while (r.Read())
+                // קביעת תפקידים: מנהל מערכת, מנהל מסעדה, או משתמש רגיל
+                string adminVal = reader["Admin"].ToString().Trim();
+                string restAdminVal = reader["RestaurantAdmin"].ToString().Trim();
+
+                string isAdmin = "לא";
+                if (adminVal == "כן") isAdmin = "כן";
+
+                string isRestAdmin = "לא";
+                string restaurantName = "";
+                if (restAdminVal != "" && restAdminVal != "לא")
                 {
-                    string restAdminVal = r["RestaurantAdmin"] == DBNull.Value ? "" : r["RestaurantAdmin"].ToString().Trim();
-                    string adminVal = r["Admin"] == DBNull.Value ? "" : r["Admin"].ToString().Trim();
+                    isRestAdmin = "כן";
+                    restaurantName = restAdminVal;
+                }
 
-                    var u = new UserStatRow
-                    {
-                        Name = r["MyFullName"].ToString(),
-                        Phone = r["MyPhoneNumber"] == DBNull.Value ? "" : r["MyPhoneNumber"].ToString(),
-                        Area = r["Area"] == DBNull.Value ? "" : r["Area"].ToString(),
-                        Vegetarian = IsYes(r["Vegetarian"]),
-                        Vegan = IsYes(r["Vegan"]),
-                        Kosher = IsYes(r["Kosher"]),
-                        Gluten = IsYes(r["Gluten"]),
-                        Peanuts = IsYes(r["Peanuts"]),
-                        TreeNuts = IsYes(r["TreeNuts"]),
-                        Fish = IsYes(r["Fish"]),
-                        Sesame = IsYes(r["Sesame"]),
-                        Milk = IsYes(r["Milk"]),
-                        IsAdmin = (adminVal == "כן"),
-                        IsRestAdmin = (!string.IsNullOrEmpty(restAdminVal) && restAdminVal != "לא"),
-                        RestaurantName = (!string.IsNullOrEmpty(restAdminVal) && restAdminVal != "לא") ? restAdminVal : ""
-                    };
+                // בונים את ה-HTML של התגיות (תזונה+אלרגיות) ושל התפקיד
+                // הוחלף StringBuilder בשרשור מחרוזות פשוט.
+                string tagsHtml = BuildTagsHtml(vegetarian, vegan, kosher,
+                                                gluten, peanuts, treeNuts, fish, sesame, milk);
+                string roleTag = BuildRoleTag(isAdmin, isRestAdmin, restaurantName);
 
-                    u.AreaHebrew = TranslateArea(u.Area);
-                    u.TagsHtml = BuildTagsHtml(u);
-                    u.RoleTag = BuildRoleTag(u);
+                dt.Rows.Add(name, phone, area, areaHebrew,
+                            vegetarian, vegan, kosher,
+                            gluten, peanuts, treeNuts, fish, sesame, milk,
+                            isAdmin, isRestAdmin, restaurantName,
+                            tagsHtml, roleTag);
+            }
+            con.Close();
 
-                    list.Add(u);
+            return dt;
+        }
+
+        // ממיר ערך מ-DB לערך "כן" או "לא".
+        // הוסרה בדיקת DBNull.Value - ToString() על DBNull מחזיר "".
+        private string IsYes(object value)
+        {
+            string s = value.ToString().Trim();
+            if (s == "כן") return "כן";
+            else return "לא";
+        }
+
+        // ממיר את שם האזור מאנגלית לעברית.
+        // הוחלף switch ב-if/else if.
+        private string TranslateArea(string area)
+        {
+            if (area == "Darom")
+                return "דרום";
+            else if (area == "Merkaz")
+                return "מרכז";
+            else if (area == "Tzafon")
+                return "צפון";
+            else
+                return area;
+        }
+
+        // בונה HTML של תגיות תזונה ואלרגיות עבור משתמש.
+        // הוחלף StringBuilder בשרשור מחרוזות פשוט (+).
+        private string BuildTagsHtml(string vegetarian, string vegan, string kosher,
+                                     string gluten, string peanuts, string treeNuts,
+                                     string fish, string sesame, string milk)
+        {
+            string html = "";
+            if (vegetarian == "כן") html = html + "<span class='tag diet'>🥗 צמחוני</span>";
+            if (vegan == "כן") html = html + "<span class='tag diet'>🌱 טבעוני</span>";
+            if (kosher == "כן") html = html + "<span class='tag diet'>✡️ כשר</span>";
+            if (gluten == "כן") html = html + "<span class='tag allergy'>🌾 גלוטן</span>";
+            if (peanuts == "כן") html = html + "<span class='tag allergy'>🥜 בוטנים</span>";
+            if (treeNuts == "כן") html = html + "<span class='tag allergy'>🌰 אגוזים</span>";
+            if (fish == "כן") html = html + "<span class='tag allergy'>🐟 דגים</span>";
+            if (sesame == "כן") html = html + "<span class='tag allergy'>🌿 שומשום</span>";
+            if (milk == "כן") html = html + "<span class='tag allergy'>🥛 חלב</span>";
+            return html;
+        }
+
+        // בונה HTML של תגית התפקיד (מנהל מערכת / מנהל מסעדה / רגיל).
+        // הוסר HttpUtility.HtmlEncode - שמות המסעדה אצלנו לא מכילים תווים מיוחדים.
+        private string BuildRoleTag(string isAdmin, string isRestAdmin, string restaurantName)
+        {
+            if (isAdmin == "כן")
+                return "<span class='tag role-admin'>⚙️ מנהל מערכת</span>";
+            else if (isRestAdmin == "כן")
+                return "<span class='tag role-rest'>🍽️ מנהל מסעדה: " + restaurantName + "</span>";
+            else
+                return "";
+        }
+
+        // ============ KPIs ============
+
+        // מציג מספרים סטטיסטיים בכרטיסיות העליונות.
+        // הוחלפו all.Count(u => predicate) בלולאות for עם מונה.
+        private void BindKPIs(DataTable allUsers)
+        {
+            int totalUsers = allUsers.Rows.Count;
+
+            // ספירת משתמשים שהם צמחונים או טבעונים
+            int vegCount = 0;
+            for (int i = 0; i < allUsers.Rows.Count; i++)
+            {
+                string vegetarian = allUsers.Rows[i]["Vegetarian"].ToString();
+                string vegan = allUsers.Rows[i]["Vegan"].ToString();
+                if (vegetarian == "כן" || vegan == "כן")
+                    vegCount++;
+            }
+
+            // ספירת שומרי כשרות
+            int kosherCount = 0;
+            for (int i = 0; i < allUsers.Rows.Count; i++)
+            {
+                if (allUsers.Rows[i]["Kosher"].ToString() == "כן")
+                    kosherCount++;
+            }
+
+            // ספירת משתמשים עם לפחות אלרגיה אחת
+            int allergyCount = 0;
+            for (int i = 0; i < allUsers.Rows.Count; i++)
+            {
+                if (allUsers.Rows[i]["Gluten"].ToString() == "כן" ||
+                    allUsers.Rows[i]["Peanuts"].ToString() == "כן" ||
+                    allUsers.Rows[i]["TreeNuts"].ToString() == "כן" ||
+                    allUsers.Rows[i]["Fish"].ToString() == "כן" ||
+                    allUsers.Rows[i]["Sesame"].ToString() == "כן" ||
+                    allUsers.Rows[i]["Milk"].ToString() == "כן")
+                {
+                    allergyCount++;
                 }
             }
 
-            return list;
-        }
-
-        // המרה של ערך מ-DB ל-bool: "כן" => true, אחרת false
-        private bool IsYes(object value)
-        {
-            if (value == DBNull.Value) return false;
-            string s = value.ToString().Trim();
-            return s == "כן";
-        }
-
-        private string TranslateArea(string area)
-        {
-            switch (area)
+            // ספירת מנהלים (מערכת + מסעדה)
+            int adminsCount = 0;
+            for (int i = 0; i < allUsers.Rows.Count; i++)
             {
-                case "Darom": return "דרום";
-                case "Merkaz": return "מרכז";
-                case "Tzafon": return "צפון";
-                default: return area;
+                if (allUsers.Rows[i]["IsAdmin"].ToString() == "כן" ||
+                    allUsers.Rows[i]["IsRestAdmin"].ToString() == "כן")
+                {
+                    adminsCount++;
+                }
             }
+
+            LblTotalUsers.Text = totalUsers.ToString();
+            LblVegCount.Text = vegCount.ToString();
+            LblKosherCount.Text = kosherCount.ToString();
+            LblAllergyCount.Text = allergyCount.ToString();
+            LblAdminsCount.Text = adminsCount.ToString();
         }
 
-        private string BuildTagsHtml(UserStatRow u)
-        {
-            var sb = new StringBuilder();
-            if (u.Vegetarian) sb.Append("<span class='tag diet'>🥗 צמחוני</span>");
-            if (u.Vegan) sb.Append("<span class='tag diet'>🌱 טבעוני</span>");
-            if (u.Kosher) sb.Append("<span class='tag diet'>✡️ כשר</span>");
-            if (u.Gluten) sb.Append("<span class='tag allergy'>🌾 גלוטן</span>");
-            if (u.Peanuts) sb.Append("<span class='tag allergy'>🥜 בוטנים</span>");
-            if (u.TreeNuts) sb.Append("<span class='tag allergy'>🌰 אגוזים</span>");
-            if (u.Fish) sb.Append("<span class='tag allergy'>🐟 דגים</span>");
-            if (u.Sesame) sb.Append("<span class='tag allergy'>🌿 שומשום</span>");
-            if (u.Milk) sb.Append("<span class='tag allergy'>🥛 חלב</span>");
-            return sb.ToString();
-        }
+        // ============ גרפים ============
 
-        private string BuildRoleTag(UserStatRow u)
-        {
-            if (u.IsAdmin) return "<span class='tag role-admin'>⚙️ מנהל מערכת</span>";
-            if (u.IsRestAdmin) return "<span class='tag role-rest'>🍽️ מנהל מסעדה: " + System.Web.HttpUtility.HtmlEncode(u.RestaurantName) + "</span>";
-            return "";
-        }
-
-        // ===== KPIs וגרפים =====
-
-        private void BindKPIs(List<UserStatRow> all)
-        {
-            LblTotalUsers.Text = all.Count.ToString();
-            LblVegCount.Text = all.Count(u => u.Vegetarian || u.Vegan).ToString();
-            LblKosherCount.Text = all.Count(u => u.Kosher).ToString();
-            LblAllergyCount.Text = all.Count(u => u.HasAnyAllergy).ToString();
-            LblAdminsCount.Text = all.Count(u => u.IsAdmin || u.IsRestAdmin).ToString();
-        }
-
-        private void BindAreaChart(List<UserStatRow> all)
+        // גרף 1: התפלגות לפי אזור (דרום / מרכז / צפון)
+        private void BindAreaChart(DataTable allUsers)
         {
             string[] order = { "Darom", "Merkaz", "Tzafon" };
             string[] labels = { "דרום", "מרכז", "צפון" };
+            int[] counts = new int[3];
+            int[] percents = new int[3];
 
-            var bars = new List<StatBar>();
             for (int i = 0; i < order.Length; i++)
             {
-                int count = all.Count(u => u.Area == order[i]);
-                bars.Add(new StatBar { Label = labels[i], Count = count });
+                int count = 0;
+                for (int j = 0; j < allUsers.Rows.Count; j++)
+                {
+                    if (allUsers.Rows[j]["Area"].ToString() == order[i])
+                        count++;
+                }
+                counts[i] = count;
             }
-            ApplyPercentages(bars);
 
-            RepeaterAreas.DataSource = bars;
-            RepeaterAreas.DataBind();
+            ApplyPercentages(counts, percents);
+            LblAreaChart.Text = BuildBarChartHtml(labels, counts, percents, "");
         }
 
-        private void BindDietChart(List<UserStatRow> all)
+        // גרף 2: העדפות תזונה (צמחוני / טבעוני / כשר)
+        private void BindDietChart(DataTable allUsers)
         {
-            var bars = new List<StatBar>
+            string[] dietColumns = { "Vegetarian", "Vegan", "Kosher" };
+            string[] labels = { "🥗 צמחוני", "🌱 טבעוני", "✡️ כשר" };
+            int[] counts = new int[3];
+            int[] percents = new int[3];
+
+            for (int i = 0; i < dietColumns.Length; i++)
             {
-                new StatBar { Label = "🥗 צמחוני", Count = all.Count(u => u.Vegetarian) },
-                new StatBar { Label = "🌱 טבעוני", Count = all.Count(u => u.Vegan) },
-                new StatBar { Label = "✡️ כשר", Count = all.Count(u => u.Kosher) }
-            };
-            ApplyPercentages(bars);
-
-            RepeaterDiets.DataSource = bars;
-            RepeaterDiets.DataBind();
-        }
-
-        private void BindAllergyChart(List<UserStatRow> all)
-        {
-            var bars = new List<StatBar>
-            {
-                new StatBar { Label = "🌾 גלוטן", Count = all.Count(u => u.Gluten) },
-                new StatBar { Label = "🥜 בוטנים", Count = all.Count(u => u.Peanuts) },
-                new StatBar { Label = "🌰 אגוזים", Count = all.Count(u => u.TreeNuts) },
-                new StatBar { Label = "🐟 דגים", Count = all.Count(u => u.Fish) },
-                new StatBar { Label = "🌿 שומשום", Count = all.Count(u => u.Sesame) },
-                new StatBar { Label = "🥛 חלב", Count = all.Count(u => u.Milk) }
-            };
-            // מציג ממיון יורד כדי שהאלרגיה הנפוצה ביותר תהיה בראש
-            bars = bars.OrderByDescending(b => b.Count).ToList();
-            ApplyPercentages(bars);
-
-            RepeaterAllergies.DataSource = bars;
-            RepeaterAllergies.DataBind();
-        }
-
-        private void ApplyPercentages(List<StatBar> bars)
-        {
-            if (bars.Count == 0) return;
-            int max = bars.Max(b => b.Count);
-            if (max == 0) return;
-            foreach (var b in bars)
-            {
-                b.Percent = b.Count * 100 / max;
-                if (b.Count > 0 && b.Percent < 3) b.Percent = 3;
+                int count = 0;
+                for (int j = 0; j < allUsers.Rows.Count; j++)
+                {
+                    if (allUsers.Rows[j][dietColumns[i]].ToString() == "כן")
+                        count++;
+                }
+                counts[i] = count;
             }
+
+            ApplyPercentages(counts, percents);
+            LblDietChart.Text = BuildBarChartHtml(labels, counts, percents, "green");
         }
 
-        // ===== סינון רשימת המשתמשים =====
+        // גרף 3: אלרגיות נפוצות - 6 אלרגיות, ממוין יורד לפי שכיחות
+        private void BindAllergyChart(DataTable allUsers)
+        {
+            string[] allergyColumns = { "Gluten", "Peanuts", "TreeNuts", "Fish", "Sesame", "Milk" };
+            string[] labels = { "🌾 גלוטן", "🥜 בוטנים", "🌰 אגוזים", "🐟 דגים", "🌿 שומשום", "🥛 חלב" };
+            int[] counts = new int[6];
+            int[] percents = new int[6];
 
-        private void BindFilteredList(List<UserStatRow> all)
+            for (int i = 0; i < allergyColumns.Length; i++)
+            {
+                int count = 0;
+                for (int j = 0; j < allUsers.Rows.Count; j++)
+                {
+                    if (allUsers.Rows[j][allergyColumns[i]].ToString() == "כן")
+                        count++;
+                }
+                counts[i] = count;
+            }
+
+            // מיון בועות בסדר יורד (מהשכיח ביותר לפחות שכיח).
+            // הוחלף OrderByDescending(b => b.Count).ToList() במיון בועות פשוט.
+            int n = counts.Length;
+            for (int i = 0; i < n - 1; i++)
+            {
+                for (int j = 0; j < n - 1 - i; j++)
+                {
+                    if (counts[j] < counts[j + 1])
+                    {
+                        // החלפת counts ו-labels יחד
+                        int tmpC = counts[j]; counts[j] = counts[j + 1]; counts[j + 1] = tmpC;
+                        string tmpL = labels[j]; labels[j] = labels[j + 1]; labels[j + 1] = tmpL;
+                    }
+                }
+            }
+
+            ApplyPercentages(counts, percents);
+            LblAllergyChart.Text = BuildBarChartHtml(labels, counts, percents, "red");
+        }
+
+        // ============ סינון רשימת המשתמשים ============
+
+        // מסנן את רשימת המשתמשים לפי הפילטרים שהמשתמש בחר ומציג ב-Label
+        // כרטיסי משתמשים (HTML שנבנה בקוד).
+        // הוחלף IEnumerable<UserStatRow> q = all + שרשרת Where()
+        // בלולאת for עם בדיקות if רגילות.
+        private void BindFilteredUserList(DataTable allUsers)
         {
             string areaF = DdlArea.SelectedValue;
             string dietF = DdlDiet.SelectedValue;
             string allergyF = DdlAllergy.SelectedValue;
             string roleF = DdlRole.SelectedValue;
-            string nameF = TxtName.Text == null ? "" : TxtName.Text.Trim();
 
-            IEnumerable<UserStatRow> q = all;
-            if (!string.IsNullOrEmpty(areaF)) q = q.Where(u => u.Area == areaF);
-            if (!string.IsNullOrEmpty(dietF)) q = q.Where(u => u.HasDiet(dietF));
-            if (!string.IsNullOrEmpty(allergyF)) q = q.Where(u => u.HasAllergy(allergyF));
-            if (!string.IsNullOrEmpty(roleF)) q = q.Where(u => u.MatchesRole(roleF));
-            if (!string.IsNullOrEmpty(nameF))
+            string nameF = "";
+            if (TxtName.Text != null)
+                nameF = TxtName.Text.Trim();
+            string nameFLower = nameF.ToLower();
+
+            string html = "";
+            int showingCount = 0;
+
+            // לולאה על כל המשתמשים. לכל אחד בודקים פילטרים -
+            // אם לא תואם, מדלגים. אם תואם, בונים כרטיס משתמש.
+            for (int i = 0; i < allUsers.Rows.Count; i++)
             {
-                string lower = nameF.ToLower();
-                q = q.Where(u => u.Name != null && u.Name.ToLower().Contains(lower));
+                // פילטר אזור
+                if (areaF != "" && allUsers.Rows[i]["Area"].ToString() != areaF)
+                    continue;
+
+                // פילטר העדפת תזונה (אם נבחרה - שם העמודה הוא ערך הפילטר)
+                if (dietF != "" && allUsers.Rows[i][dietF].ToString() != "כן")
+                    continue;
+
+                // פילטר אלרגיה
+                if (allergyF != "" && allUsers.Rows[i][allergyF].ToString() != "כן")
+                    continue;
+
+                // פילטר תפקיד
+                if (roleF != "")
+                {
+                    string isAdmin = allUsers.Rows[i]["IsAdmin"].ToString();
+                    string isRestAdmin = allUsers.Rows[i]["IsRestAdmin"].ToString();
+
+                    bool matches = false;
+                    if (roleF == "Admin" && isAdmin == "כן")
+                        matches = true;
+                    else if (roleF == "RestAdmin" && isRestAdmin == "כן" && isAdmin != "כן")
+                        matches = true;
+                    else if (roleF == "User" && isAdmin != "כן" && isRestAdmin != "כן")
+                        matches = true;
+
+                    if (!matches) continue;
+                }
+
+                // פילטר שם (חיפוש חופשי - חלק מהשם)
+                if (nameF != "")
+                {
+                    string userName = allUsers.Rows[i]["Name"].ToString().ToLower();
+                    if (!userName.Contains(nameFLower))
+                        continue;
+                }
+
+                // המשתמש עבר את כל הפילטרים - בונים את כרטיס המשתמש בהדבקת מחרוזות.
+                html = html + "<div class='user-card'>";
+                html = html + "<div class='user-icon'>👤</div>";
+                html = html + "<div class='user-info'>";
+                html = html + "<div class='user-name-row'>";
+                html = html + "<span class='user-name'>" + allUsers.Rows[i]["Name"].ToString() + "</span>";
+                html = html + allUsers.Rows[i]["RoleTag"].ToString();
+                html = html + "</div>";
+                html = html + "<div class='user-meta'>";
+                html = html + "<span><span class='label'>📞</span> " + allUsers.Rows[i]["Phone"].ToString() + "</span>";
+                html = html + "<span><span class='label'>📍</span> " + allUsers.Rows[i]["AreaHebrew"].ToString() + "</span>";
+                html = html + "</div>";
+                html = html + "<div class='tag-row'>" + allUsers.Rows[i]["TagsHtml"].ToString() + "</div>";
+                html = html + "</div>";
+                html = html + "</div>";
+
+                showingCount++;
             }
 
-            var filtered = q.ToList();
+            LblTotal.Text = allUsers.Rows.Count.ToString();
+            LblShowing.Text = showingCount.ToString();
 
-            LblTotal.Text = all.Count.ToString();
-            LblShowing.Text = filtered.Count.ToString();
-
-            if (filtered.Count == 0)
+            if (showingCount == 0)
             {
-                RepeaterUsers.Visible = false;
+                LblUsersList.Visible = false;
                 PnlEmpty.Visible = true;
             }
             else
             {
-                RepeaterUsers.Visible = true;
+                LblUsersList.Visible = true;
                 PnlEmpty.Visible = false;
-                RepeaterUsers.DataSource = filtered;
-                RepeaterUsers.DataBind();
+                LblUsersList.Text = html;
             }
+        }
+
+        // ============ פונקציות עזר משותפות ============
+
+        // ממיר ספירות לאחוזים יחסית לערך המקסימלי
+        private void ApplyPercentages(int[] counts, int[] percents)
+        {
+            int max = 0;
+            for (int i = 0; i < counts.Length; i++)
+            {
+                if (counts[i] > max) max = counts[i];
+            }
+            if (max == 0) return;
+
+            for (int i = 0; i < counts.Length; i++)
+            {
+                percents[i] = counts[i] * 100 / max;
+                if (counts[i] > 0 && percents[i] < 3) percents[i] = 3;
+            }
+        }
+
+        // בונה HTML של גרף בר בעזרת שרשור מחרוזות.
+        // colorClass: "" (זהב/ברירת מחדל), "green", "red", "purple".
+        private string BuildBarChartHtml(string[] labels, int[] counts, int[] percents, string colorClass)
+        {
+            string fillClass = "bar-fill";
+            if (colorClass != "")
+                fillClass = fillClass + " " + colorClass;
+
+            string html = "";
+            for (int i = 0; i < labels.Length; i++)
+            {
+                html = html + "<div class='bar-row'>";
+                html = html + "<div class='bar-label'>" + labels[i] + "</div>";
+                html = html + "<div class='bar-track'>";
+                html = html + "<div class='" + fillClass + "' style='width: " + percents[i] + "%;'></div>";
+                html = html + "</div>";
+                html = html + "<div class='bar-value'>" + counts[i] + "</div>";
+                html = html + "</div>";
+            }
+            return html;
         }
     }
 }

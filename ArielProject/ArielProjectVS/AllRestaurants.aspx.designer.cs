@@ -25,9 +25,9 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.Label LblUserName;
 
         /// <summary>
-        /// RepeaterRestaurants control.
+        /// GridView1 control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater RepeaterRestaurants;
+        protected global::System.Web.UI.WebControls.GridView GridView1;
 
         /// <summary>
         /// PnlEmpty control.
