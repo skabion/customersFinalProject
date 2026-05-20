@@ -42,6 +42,11 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.DropDownList DdlSort;
 
         /// <summary>
+        /// BtnClear control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button BtnClear;
+
+        /// <summary>
         /// GridView1 control.
         /// </summary>
         /// <remarks>

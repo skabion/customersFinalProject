@@ -30,6 +30,28 @@ namespace ArielProject
             LoadHistory();
         }
 
+        // לחיצה על "ניקוי היסטוריית הזמנות" - מוחק את כל ההזמנות מהעבר
+        // של המשתמש הנוכחי. ה-OnClientClick ב-aspx כבר וידא אישור מהמשתמש.
+        protected void BtnClear_Click(object sender, EventArgs e)
+        {
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection con = new OleDbConnection(connStr);
+
+            // מוחק רק את ההזמנות של המשתמש המחובר (PhoneNum) שתאריכן עבר
+            string today = DateTime.Today.ToString("yyyy-MM-dd");
+            string sql = "DELETE FROM MyBooking " +
+                         "WHERE PhoneNum = '" + Session["Phone"].ToString() + "' " +
+                         "AND InvDate < #" + today + "#";
+
+            OleDbCommand cmd = new OleDbCommand(sql, con);
+            con.Open();
+            cmd.ExecuteNonQuery();
+            con.Close();
+
+            // טוענים מחדש - הטבלה תהיה ריקה ויוצג פאנל "אין היסטוריה"
+            LoadHistory();
+        }
+
         // טוען את היסטוריית ההזמנות של המשתמש ומציג אותן ב-GridView.
         // הכל בשאילתה אחת: INNER JOIN מצרף את פרטי המסעדה (FoodType + Region)
         // לכל הזמנה, IIF מתרגם את סוג השולחן לעברית, ו-ORDER BY ממיין לפי

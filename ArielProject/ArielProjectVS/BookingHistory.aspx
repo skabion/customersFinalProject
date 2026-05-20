@@ -40,6 +40,14 @@
             </asp:DropDownList>
         </div>
 
+        <%-- כפתור מחיקת כל ההיסטוריה. OnClientClick מציג חלון אישור ב-JS
+             לפני שהפעולה מגיעה לשרת - כדי שלא ימחק בטעות. --%>
+        <div style="text-align:center; margin: 10px 0;">
+            <asp:Button ID="BtnClear" runat="server" Text="🗑️ ניקוי היסטוריית הזמנות"
+                OnClick="BtnClear_Click" CssClass="btn-delete"
+                OnClientClick="return confirm('האם אתה בטוח שברצונך למחוק את כל ההיסטוריה? פעולה זו אינה הפיכה.');" />
+        </div>
+
         <div class="bookings-container">
             <%-- הוחלף ה-Repeater עם <ItemTemplate> ו-Eval() ב-GridView פשוט.
                  AutoGenerateColumns="True" יוצר אוטומטית עמודה לכל עמודת DataTable.
