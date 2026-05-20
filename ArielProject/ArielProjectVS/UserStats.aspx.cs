@@ -31,7 +31,9 @@ namespace ArielProject
             BindKPIs(allUsers);
             BindAreaChart(allUsers);
             BindDietChart(allUsers);
-            BindAllergyChart(allUsers);
+            // BindAllergyChart לא צריך את allUsers - הוא מריץ שאילתה משלו
+            // עם UNION ALL + ORDER BY כדי להחליף את מיון הבועות שהיה בקוד.
+            BindAllergyChart();
             BindFilteredUserList(allUsers);
         }
 
@@ -303,40 +305,43 @@ namespace ArielProject
             LblDietChart.Text = BuildBarChartHtml(labels, counts, percents, "green");
         }
 
-        // גרף 3: אלרגיות נפוצות - 6 אלרגיות, ממוין יורד לפי שכיחות
-        private void BindAllergyChart(DataTable allUsers)
+        // גרף 3: אלרגיות נפוצות - 6 אלרגיות, ממוין יורד לפי שכיחות.
+        // הספירה + המיון מתבצעים ב-SQL עם UNION ALL + ORDER BY,
+        // במקום מיון בועות + לולאת ספירה כפולה שהיו קודם בקוד.
+        private void BindAllergyChart()
         {
-            string[] allergyColumns = { "Gluten", "Peanuts", "TreeNuts", "Fish", "Sesame", "Milk" };
-            string[] labels = { "🌾 גלוטן", "🥜 בוטנים", "🌰 אגוזים", "🐟 דגים", "🌿 שומשום", "🥛 חלב" };
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection con = new OleDbConnection(connStr);
+
+            // לכל אלרגיה: שאילתה אחת שמחזירה שורה עם שם הלייבל + ספירת המשתמשים.
+            // UNION ALL "מדביק" את 6 השאילתות לתוצאה אחת בת 6 שורות.
+            // ORDER BY 2 DESC ממיין לפי העמודה השנייה (Cnt) מהגדול לקטן.
+            // משתמשים במספר עמודה (2) כי זה הסגנון הבטוח ביותר עם UNION באקסס.
+            string sql = "SELECT '🌾 גלוטן' AS Allergy, COUNT(*) AS Cnt FROM MyUsers WHERE Gluten='כן' " +
+                         "UNION ALL SELECT '🥜 בוטנים', COUNT(*) FROM MyUsers WHERE Peanuts='כן' " +
+                         "UNION ALL SELECT '🌰 אגוזים', COUNT(*) FROM MyUsers WHERE TreeNuts='כן' " +
+                         "UNION ALL SELECT '🐟 דגים', COUNT(*) FROM MyUsers WHERE Fish='כן' " +
+                         "UNION ALL SELECT '🌿 שומשום', COUNT(*) FROM MyUsers WHERE Sesame='כן' " +
+                         "UNION ALL SELECT '🥛 חלב', COUNT(*) FROM MyUsers WHERE Milk='כן' " +
+                         "ORDER BY 2 DESC";
+
+            OleDbCommand cmd = new OleDbCommand(sql, con);
+            con.Open();
+            OleDbDataReader reader = cmd.ExecuteReader();
+
+            // 6 שורות בדיוק - מערכים בגודל קבוע
+            string[] labels = new string[6];
             int[] counts = new int[6];
             int[] percents = new int[6];
 
-            for (int i = 0; i < allergyColumns.Length; i++)
+            int idx = 0;
+            while (reader.Read())
             {
-                int count = 0;
-                for (int j = 0; j < allUsers.Rows.Count; j++)
-                {
-                    if (allUsers.Rows[j][allergyColumns[i]].ToString() == "כן")
-                        count++;
-                }
-                counts[i] = count;
+                labels[idx] = reader["Allergy"].ToString();
+                counts[idx] = int.Parse(reader["Cnt"].ToString());
+                idx++;
             }
-
-            // מיון בועות בסדר יורד (מהשכיח ביותר לפחות שכיח).
-            // הוחלף OrderByDescending(b => b.Count).ToList() במיון בועות פשוט.
-            int n = counts.Length;
-            for (int i = 0; i < n - 1; i++)
-            {
-                for (int j = 0; j < n - 1 - i; j++)
-                {
-                    if (counts[j] < counts[j + 1])
-                    {
-                        // החלפת counts ו-labels יחד
-                        int tmpC = counts[j]; counts[j] = counts[j + 1]; counts[j + 1] = tmpC;
-                        string tmpL = labels[j]; labels[j] = labels[j + 1]; labels[j + 1] = tmpL;
-                    }
-                }
-            }
+            con.Close();
 
             ApplyPercentages(counts, percents);
             LblAllergyChart.Text = BuildBarChartHtml(labels, counts, percents, "red");

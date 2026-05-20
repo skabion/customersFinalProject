@@ -86,12 +86,19 @@
             </div>
         </div>
 
-        <div class="section-title">✦ &nbsp; 5 ההזמנות הקרובות &nbsp; ✦</div>
+        <div class="section-title">✦ &nbsp; ההזמנות העתידיות &nbsp; ✦</div>
 
         <div class="upcoming-wrapper">
-            <%-- הוחלף Repeater עם HeaderTemplate/ItemTemplate/FooterTemplate
-                 ב-GridView פשוט. AutoGenerateColumns יוצר אוטומטית עמודה
-                 לכל עמודה ב-DataTable. --%>
+            <%-- מיון מתבצע ב-SQL (ORDER BY InvDate ASC/DESC) - לא בקוד C#.
+                 AutoPostBack מפעיל את Page_Load מחדש שטוען את הטבלה לפי הבחירה. --%>
+            <div class="sort-control" style="text-align:center; margin-bottom:15px;">
+                <asp:Label runat="server" Text="מיון לפי תאריך: " AssociatedControlID="DdlSort"></asp:Label>
+                <asp:DropDownList ID="DdlSort" runat="server" AutoPostBack="true">
+                    <asp:ListItem Value="ASC" Text="קרובות ביותר ראשונות" Selected="True"></asp:ListItem>
+                    <asp:ListItem Value="DESC" Text="רחוקות ביותר ראשונות"></asp:ListItem>
+                </asp:DropDownList>
+            </div>
+
             <asp:GridView ID="GridView1" runat="server"
                 AutoGenerateColumns="True"
                 Width="100%"

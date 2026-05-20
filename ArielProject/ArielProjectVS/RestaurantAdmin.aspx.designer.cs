@@ -110,6 +110,11 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.Label LblDaysChart;
 
         /// <summary>
+        /// DdlSort control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList DdlSort;
+
+        /// <summary>
         /// GridView1 control.
         /// </summary>
         protected global::System.Web.UI.WebControls.GridView GridView1;

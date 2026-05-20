@@ -162,110 +162,45 @@ namespace ArielProject
         }
 
         // קובע את שעות הפתיחה והסגירה לפי המסעדה והיום בשבוע.
-        // שעות שעוברות חצות מיוצגות עם מספר גדול מ-24 (למשל 25 = 01:00 למחרת).
-        // openHour=0 ו-closeHour=0 פירושו שהמסעדה סגורה.
+        // השעות נשמרות בטבלת MyRestaurants ב-6 עמודות: WeekdayOpen, WeekdayClose,
+        // FriOpen, FriClose, SatOpen, SatClose - כל אחת בפורמט "HH:MM".
+        // שעות שעוברות חצות מיוצגות עם מספר גדול מ-24 (למשל 25:00 = 01:00 למחרת).
+        // אם הפתיחה והסגירה שתיהן 00:00 פירושו שהמסעדה סגורה.
         // הפרמטר day הוא מספר שלם: 0=ראשון .. 5=שישי, 6=שבת.
         private void GetOpeningHours(string res, int day)
         {
-            bool isFri = day == 5;  // שישי
-            bool isSat = day == 6;  // שבת
-
-            // ברירת מחדל - שעות גנריות
+            // ברירת מחדל - שעות גנריות אם המסעדה לא נמצאת בטבלה
             openHour = 18; openMinute = 0;
             closeHour = 23; closeMinute = 30;
 
-            if (res == "Bobo")
+            // בוחרים את זוג העמודות הנכון לפי היום:
+            // יום 5 = שישי, יום 6 = שבת, וכל השאר (0-4 = ראשון-חמישי) = חול
+            string openCol, closeCol;
+            if (day == 5) { openCol = "FriOpen"; closeCol = "FriClose"; }
+            else if (day == 6) { openCol = "SatOpen"; closeCol = "SatClose"; }
+            else { openCol = "WeekdayOpen"; closeCol = "WeekdayClose"; }
+
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection con = new OleDbConnection(connStr);
+
+            // שאילתה ששולפת בדיוק את 2 הערכים שצריך - השעה הפותחת והסוגרת
+            string sql = "SELECT " + openCol + ", " + closeCol +
+                         " FROM MyRestaurants WHERE Restaurants = '" + res + "'";
+            OleDbCommand cmd = new OleDbCommand(sql, con);
+            con.Open();
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
             {
-                if (isFri) { openHour = 12; openMinute = 0; closeHour = 15; closeMinute = 0; }
-                else if (isSat) { openHour = 20; openMinute = 0; closeHour = 23; closeMinute = 30; }
-                else { openHour = 12; openMinute = 0; closeHour = 23; closeMinute = 30; }
+                // הערכים בפורמט "HH:MM" - מפצלים לפי ':' לקבלת שעה ודקה
+                string[] openParts = reader[openCol].ToString().Split(':');
+                openHour = int.Parse(openParts[0]);
+                openMinute = int.Parse(openParts[1]);
+
+                string[] closeParts = reader[closeCol].ToString().Split(':');
+                closeHour = int.Parse(closeParts[0]);
+                closeMinute = int.Parse(closeParts[1]);
             }
-            else if (res == "La Lush")
-            {
-                if (isFri) { openHour = 8; openMinute = 0; closeHour = 16; closeMinute = 0; }
-                else if (isSat) { openHour = 19; openMinute = 0; closeHour = 24; closeMinute = 0; }
-                else { openHour = 9; openMinute = 0; closeHour = 24; closeMinute = 0; }
-            }
-            else if (res == "Moses")
-            {
-                // 4 = יום חמישי
-                if (day == 4 || isFri || isSat)
-                { openHour = 12; openMinute = 0; closeHour = 25; closeMinute = 0; }
-                else
-                { openHour = 12; openMinute = 0; closeHour = 24; closeMinute = 0; }
-            }
-            else if (res == "Japanika")
-            {
-                if (isFri) { openHour = 12; openMinute = 0; closeHour = 15; closeMinute = 0; }
-                else if (isSat) { openHour = 19; openMinute = 30; closeHour = 23; closeMinute = 0; }
-                else { openHour = 12; openMinute = 0; closeHour = 23; closeMinute = 0; }
-            }
-            else if (res == "Kagas")
-            {
-                if (isFri) { openHour = 9; openMinute = 0; closeHour = 16; closeMinute = 0; }
-                else if (isSat) { openHour = 20; openMinute = 0; closeHour = 23; closeMinute = 30; }
-                else { openHour = 10; openMinute = 0; closeHour = 23; closeMinute = 0; }
-            }
-            else if (res == "Vivino")
-            {
-                if (isFri) { openHour = 12; openMinute = 0; closeHour = 16; closeMinute = 0; }
-                else if (isSat) { openHour = 19; openMinute = 0; closeHour = 23; closeMinute = 30; }
-                else { openHour = 12; openMinute = 0; closeHour = 23; closeMinute = 30; }
-            }
-            else if (res == "Mahne Yuda")
-            {
-                if (isFri) { openHour = 12; openMinute = 0; closeHour = 15; closeMinute = 30; }
-                else if (isSat) { openHour = 0; openMinute = 0; closeHour = 0; closeMinute = 0; }
-                else { openHour = 18; openMinute = 30; closeHour = 25; closeMinute = 30; }
-            }
-            else if (res == "Oshi Oshi")
-            {
-                if (isFri) { openHour = 11; openMinute = 30; closeHour = 15; closeMinute = 0; }
-                else if (isSat) { openHour = 20; openMinute = 0; closeHour = 23; closeMinute = 0; }
-                else { openHour = 12; openMinute = 0; closeHour = 23; closeMinute = 0; }
-            }
-            else if (res == "Biga")
-            {
-                if (isFri) { openHour = 12; openMinute = 0; closeHour = 15; closeMinute = 0; }
-                else if (isSat) { openHour = 19; openMinute = 0; closeHour = 23; closeMinute = 0; }
-                else { openHour = 12; openMinute = 0; closeHour = 23; closeMinute = 0; }
-            }
-            else if (res == "Nafis")
-            {
-                if (isFri) { openHour = 12; openMinute = 0; closeHour = 16; closeMinute = 0; }
-                else if (isSat) { openHour = 19; openMinute = 30; closeHour = 23; closeMinute = 30; }
-                else { openHour = 12; openMinute = 0; closeHour = 23; closeMinute = 30; }
-            }
-            else if (res == "Zink")
-            {
-                if (isFri) { openHour = 12; openMinute = 0; closeHour = 15; closeMinute = 30; }
-                else if (isSat) { openHour = 19; openMinute = 0; closeHour = 24; closeMinute = 0; }
-                else { openHour = 12; openMinute = 0; closeHour = 23; closeMinute = 30; }
-            }
-            else if (res == "Max Brener")
-            {
-                if (isFri) { openHour = 9; openMinute = 0; closeHour = 16; closeMinute = 0; }
-                else if (isSat) { openHour = 20; openMinute = 0; closeHour = 23; closeMinute = 0; }
-                else { openHour = 9; openMinute = 0; closeHour = 23; closeMinute = 0; }
-            }
-            else if (res == "Segev")
-            {
-                if (isFri) { openHour = 12; openMinute = 0; closeHour = 15; closeMinute = 0; }
-                else if (isSat) { openHour = 19; openMinute = 30; closeHour = 23; closeMinute = 30; }
-                else { openHour = 12; openMinute = 0; closeHour = 23; closeMinute = 0; }
-            }
-            else if (res == "Black")
-            {
-                if (isFri) { openHour = 12; openMinute = 0; closeHour = 16; closeMinute = 0; }
-                else if (isSat) { openHour = 20; openMinute = 0; closeHour = 23; closeMinute = 30; }
-                else { openHour = 12; openMinute = 0; closeHour = 23; closeMinute = 30; }
-            }
-            else if (res == "Kansai")
-            {
-                if (isFri) { openHour = 11; openMinute = 30; closeHour = 14; closeMinute = 30; }
-                else if (isSat) { openHour = 20; openMinute = 30; closeHour = 23; closeMinute = 0; }
-                else { openHour = 12; openMinute = 0; closeHour = 23; closeMinute = 0; }
-            }
+            con.Close();
         }
 
         // בודק האם שעה מסוימת פנויה - סופר כמה שולחנות תפוסים בטווח של שעתיים סביבה
