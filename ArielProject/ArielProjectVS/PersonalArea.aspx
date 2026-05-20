@@ -28,7 +28,7 @@
         <div class="gold-divider"></div>
 
         <div class="options-grid">
-            <a href="MyBookings.aspx" class="option-card">
+            <a href="UpdateBookings.aspx" class="option-card">
                 <span class="option-icon">📝</span>
                 <h3>עריכת הזמנה קיימת</h3>
                 <p>צפה בהזמנות העתידיות שלך, ערוך תאריך ושעה או בטל הזמנה</p>

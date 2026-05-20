@@ -16,7 +16,7 @@
 
 /* =================================================================
    THEME 1: ערכת עיצוב כהה-זהב (theme-dark)
-   משמש את: HomePage, PersonalArea, MyBookings, BookingHistory,
+   משמש את: HomePage, PersonalArea, UpdateBookings, BookingHistory,
             AllRestaurants, RestaurantAdmin, UserStats, Update
    ================================================================= */
 body.theme-dark {
@@ -267,7 +267,7 @@ body.theme-dark::after {
 .theme-dark .option-card h3 { font-size: 18px; color: #f5e27a; margin-bottom: 10px; }
 .theme-dark .option-card p { font-size: 13px; color: rgba(240,232,208,0.7); line-height: 1.7; }
 
-/* Bookings (MyBookings, BookingHistory) */
+/* Bookings (UpdateBookings, BookingHistory) */
 .theme-dark .bookings-container {
     max-width: 900px;
     margin: 0 auto;

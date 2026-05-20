@@ -84,12 +84,10 @@
     <Content Include="HomePage.aspx" />
     <Content Include="Catalog.aspx" />
     <Content Include="Login.aspx" />
-    <Content Include="Select.aspx" />
     <Content Include="Delete.aspx" />
     <Content Include="Insert.aspx" />
-    <Content Include="Update.aspx" />
     <Content Include="PersonalArea.aspx" />
-    <Content Include="MyBookings.aspx" />
+    <Content Include="UpdateBookings.aspx" />
     <Content Include="BookingHistory.aspx" />
     <Content Include="RestaurantAdmin.aspx" />
     <Content Include="AllRestaurants.aspx" />
@@ -145,13 +143,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Select.aspx.cs">
-      <DependentUpon>Select.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Select.aspx.designer.cs">
-      <DependentUpon>Select.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Delete.aspx.cs">
       <DependentUpon>Delete.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -167,13 +158,6 @@
       <DependentUpon>Insert.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Update.aspx.cs">
-      <DependentUpon>Update.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Update.aspx.designer.cs">
-      <DependentUpon>Update.aspx</DependentUpon>
-    </Compile>
     <Compile Include="PersonalArea.aspx.cs">
       <DependentUpon>PersonalArea.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -181,12 +165,12 @@
     <Compile Include="PersonalArea.aspx.designer.cs">
       <DependentUpon>PersonalArea.aspx</DependentUpon>
     </Compile>
-    <Compile Include="MyBookings.aspx.cs">
-      <DependentUpon>MyBookings.aspx</DependentUpon>
+    <Compile Include="UpdateBookings.aspx.cs">
+      <DependentUpon>UpdateBookings.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="MyBookings.aspx.designer.cs">
-      <DependentUpon>MyBookings.aspx</DependentUpon>
+    <Compile Include="UpdateBookings.aspx.designer.cs">
+      <DependentUpon>UpdateBookings.aspx</DependentUpon>
     </Compile>
     <Compile Include="BookingHistory.aspx.cs">
       <DependentUpon>BookingHistory.aspx</DependentUpon>
