@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="HomePage.aspx.cs" Inherits="ArielProject.HomePage" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="HomePage.aspx.cs" Inherits="ArielProject.HomePage" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
 
 <!DOCTYPE html>
 
@@ -12,7 +12,6 @@
 <body class="theme-dark">
     <form id="form1" runat="server">
 
-        <!-- HEADER -->
         <div class="header">
             <div class="logo">✦ EatIt ✦</div>
             <div class="greeting-area">
@@ -21,7 +20,6 @@
             </div>
         </div>
 
-        <!-- HERO -->
         <div class="hero">
             <span class="hero-crown">👑</span>
             <h1>ברוכים הבאים למערכת EatIt</h1>
@@ -30,7 +28,6 @@
 
         <div class="gold-divider"></div>
 
-        <!-- FEATURE CARDS -->
         <div class="cards-row">
             <div class="card">
                 <span class="card-icon">🔍</span>
@@ -99,8 +96,7 @@
     </form>
 
     <script type="text/javascript">
-        // הוסר עטיפת IIFE - (function() {...})() - שלא נלמדת בתיכון.
-        // הקוד פשוט רץ מיד כשהדף נטען, כי הוא בתוך <script> בסוף ה-body.
+
 
         // קוראים את השעה הנוכחית מהמחשב
         var hour = new Date().getHours();
@@ -115,7 +111,6 @@
             greeting = "ערב טוב,";
         }
 
-        // מציגים את הברכה בתוך ה-span עם id="greetingText"
         document.getElementById("greetingText").textContent = greeting + " ";
     </script>
 </body>

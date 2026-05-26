@@ -26,31 +26,55 @@ namespace ArielProject
         /// <summary>
         /// SignUp_FullName control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox SignUp_FullName;
 
         /// <summary>
-        /// LblNameError - הודעת שגיאה לשדה שם
+        /// LblNameError control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label LblNameError;
 
         /// <summary>
         /// SignUp_Password control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox SignUp_Password;
 
         /// <summary>
-        /// LblPasswordError - הודעת שגיאה לשדה סיסמה
+        /// LblPasswordError control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label LblPasswordError;
 
         /// <summary>
         /// SignUp_Phone control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox SignUp_Phone;
 
         /// <summary>
-        /// LblPhoneError - הודעת שגיאה לשדה טלפון
+        /// LblPhoneError control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label LblPhoneError;
 
         /// <summary>

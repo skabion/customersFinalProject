@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Insert.aspx.cs" Inherits="ArielProject.Insert" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Insert.aspx.cs" Inherits="ArielProject.Insert" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
 
 <!DOCTYPE html>
 
@@ -11,7 +11,6 @@
 </head>
 <body class="theme-auth theme-signup signup-flex">
 
-    <!-- כדורי רקע מטושטשים -->
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
@@ -25,9 +24,6 @@
                 <p>פתחו חשבון חדש ב-EatIt</p>
             </div>
 
-            <%-- הוחלפו כל ה-RegularExpressionValidator וה-RequiredFieldValidator
-                 (שדרשו תחביר רגולרי מתקדם) בבדיקה ידנית בקוד C#.
-                 כל שדה מקבל Label להצגת הודעת שגיאה (אם יש). --%>
 
             <!-- שם מלא -->
             <div class="auth-input-group">
@@ -53,7 +49,6 @@
             <!-- אזור -->
             <span class="section-title">📍 אזור מגורים</span>
             <div class="area-row">
-                <%-- הוסרה התכונה OnSelectedIndexChanged כי ההאזנה ב-cs היתה ריקה ולא עשתה כלום --%>
                 <asp:DropDownList ID="DropDownList1" runat="server">
                 </asp:DropDownList>
             </div>
@@ -77,8 +72,7 @@
                 <asp:CheckBox ID="CheckBoxMilk" runat="server" Text="חלב" />
             </div>
 
-            <%-- הוסר ValidationGroup="SignUp" כי אין יותר Validators
-                 הבדיקה מתבצעת בקוד C# בפונקציה AddUser_Click --%>
+
             <asp:Button ID="AddUser" runat="server" Text="✨ הירשם עכשיו" OnClick="AddUser_Click" CssClass="signup-btn" />
 
             <div class="extra-links">

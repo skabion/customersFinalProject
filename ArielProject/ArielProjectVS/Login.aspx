@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="ArielProject.Login" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="ArielProject.Login" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
 
 <!DOCTYPE html>
 
@@ -11,7 +11,6 @@
 </head>
 <body class="theme-auth theme-login login-flex">
 
-    <!-- כדורי רקע מטושטשים -->
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
@@ -25,8 +24,6 @@
                 <p>ברוכים השבים — התחברו לחשבון שלכם</p>
             </div>
 
-            <%-- שונה: input-group → auth-input-group, icon → auth-icon
-                 כדי להימנע מקונפליקט עם class באותו שם בדפים אחרים --%>
             <div class="auth-input-group">
                 <span class="auth-icon">👤</span>
                 <asp:TextBox ID="TxtFullName" runat="server" placeholder="שם מלא"></asp:TextBox>

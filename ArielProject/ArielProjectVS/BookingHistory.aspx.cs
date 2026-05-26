@@ -53,11 +53,6 @@ namespace ArielProject
         }
 
         // טוען את היסטוריית ההזמנות של המשתמש ומציג אותן ב-GridView.
-        // הכל בשאילתה אחת: INNER JOIN מצרף את פרטי המסעדה (FoodType + Region)
-        // לכל הזמנה, IIF מתרגם את סוג השולחן לעברית, ו-ORDER BY ממיין לפי
-        // הבחירה ב-DropDown - כולל לפי FoodType ו-Region.
-        // הוסרו: שאילתה שנייה בלולאה (per-row), פונקציית BubbleSortByColumn
-        // ופונקציית TranslateTableType - הכל מטופל ב-SQL.
         private void LoadHistory()
         {
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
@@ -76,8 +71,6 @@ namespace ArielProject
                 orderBy = "b.InvDate DESC, b.InvTime DESC";
 
             // INNER JOIN מחבר את MyBooking ל-MyRestaurants לפי שם המסעדה.
-            // b ו-r הם שמות קצרים (aliases) לטבלאות, כדי שלא נצטרך לכתוב שם מלא.
-            // IIF מקונן בתוך ה-SELECT = if/else בתוך SQL.
             string today = DateTime.Today.ToString("yyyy-MM-dd");
             string sql = "SELECT b.Restaurant, b.InvDate, b.InvTime, b.NumGuest, " +
                          "IIF(b.TableType='Small','קטן (עד 2 סועדים)'," +

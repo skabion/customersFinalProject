@@ -198,7 +198,6 @@ namespace ArielProject
                 return "";
         }
 
-        // ============ KPIs ============
 
         // מציג מספרים סטטיסטיים בכרטיסיות העליונות.
         // הוחלפו all.Count(u => predicate) בלולאות for עם מונה.
@@ -306,17 +305,14 @@ namespace ArielProject
         }
 
         // גרף 3: אלרגיות נפוצות - 6 אלרגיות, ממוין יורד לפי שכיחות.
-        // הספירה + המיון מתבצעים ב-SQL עם UNION ALL + ORDER BY,
-        // במקום מיון בועות + לולאת ספירה כפולה שהיו קודם בקוד.
+
         private void BindAllergyChart()
         {
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
             // לכל אלרגיה: שאילתה אחת שמחזירה שורה עם שם הלייבל + ספירת המשתמשים.
-            // UNION ALL "מדביק" את 6 השאילתות לתוצאה אחת בת 6 שורות.
-            // ORDER BY 2 DESC ממיין לפי העמודה השנייה (Cnt) מהגדול לקטן.
-            // משתמשים במספר עמודה (2) כי זה הסגנון הבטוח ביותר עם UNION באקסס.
+
             string sql = "SELECT '🌾 גלוטן' AS Allergy, COUNT(*) AS Cnt FROM MyUsers WHERE Gluten='כן' " +
                          "UNION ALL SELECT '🥜 בוטנים', COUNT(*) FROM MyUsers WHERE Peanuts='כן' " +
                          "UNION ALL SELECT '🌰 אגוזים', COUNT(*) FROM MyUsers WHERE TreeNuts='כן' " +
@@ -351,8 +347,7 @@ namespace ArielProject
 
         // מסנן את רשימת המשתמשים לפי הפילטרים שהמשתמש בחר ומציג ב-Label
         // כרטיסי משתמשים (HTML שנבנה בקוד).
-        // הוחלף IEnumerable<UserStatRow> q = all + שרשרת Where()
-        // בלולאת for עם בדיקות if רגילות.
+
         private void BindFilteredUserList(DataTable allUsers)
         {
             string areaF = DdlArea.SelectedValue;

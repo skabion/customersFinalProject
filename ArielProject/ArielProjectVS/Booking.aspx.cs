@@ -6,13 +6,6 @@ namespace ArielProject
 {
     public partial class Booking : System.Web.UI.Page
     {
-        // משתנים של המחלקה - מחזיקים את שעות הפתיחה של המסעדה
-        // משמשים במקום פרמטרים מסוג out
-        int openHour;
-        int openMinute;
-        int closeHour;
-        int closeMinute;
-
         protected void Page_Load(object sender, EventArgs e)
         {
             // אם המשתמש לא מחובר - חוזרים לדף ההתחברות
@@ -100,30 +93,32 @@ namespace ArielProject
             int totalTables = int.Parse(cmdCap.ExecuteScalar().ToString());
             con.Close();
 
-            // קובעים את שעות הפתיחה של המסעדה לפי היום בשבוע
-            // במקום להשתמש ב-enum בשם DayOfWeek (שלא נלמד),
-            // אנחנו ממירים את היום בשבוע למספר שלם:
-            // 0=ראשון, 1=שני, 2=שלישי, 3=רביעי, 4=חמישי, 5=שישי, 6=שבת
+            // קובעים את שעות הפתיחה לפי היום בשבוע (זהה לכל המסעדות).
+            // 1=ראשון .. 5=חמישי: 9:00-23:00, 6=שישי: 8:00-16:00, 7=שבת: 19:30-23:30
+            // מוסיפים 1 ל-DayOfWeek כי הוא מחזיר 0=ראשון, ואנחנו רוצים 1=ראשון.
             DateTime selectedDate = DateTime.Parse(date);
-            int dayNum = (int)selectedDate.DayOfWeek;
-            GetOpeningHours(res, dayNum);
+            int dayNum = (int)selectedDate.DayOfWeek + 1;
+
+            int openHour, openMinute, closeHour, closeMinute;
+            if (dayNum == 6)
+            {
+                openHour = 8; openMinute = 0;
+                closeHour = 16; closeMinute = 0;
+            }
+            else if (dayNum == 7)
+            {
+                openHour = 19; openMinute = 30;
+                closeHour = 23; closeMinute = 30;
+            }
+            else
+            {
+                openHour = 9; openMinute = 0;
+                closeHour = 23; closeMinute = 0;
+            }
 
             // אפשר להזמין רק עד שעתיים לפני הסגירה
             int startMinutes = openHour * 60 + openMinute;
             int endMinutes = closeHour * 60 + closeMinute - 120;
-
-            // אם המסעדה סגורה ביום הזה
-            // (הוספתי סוגריים מפורשים כדי שיהיה ברור איזו פעולה נעשית קודם:
-            // קודם בודקים את כל ה-AND שבסוגריים, ואחר כך משווים ל-OR.)
-            if ((openHour == 0 && closeHour == 0) || (startMinutes > endMinutes))
-            {
-                LblMsg.Text = "המסעדה אינה מקבלת הזמנות בתאריך זה";
-                LblMsg.ForeColor = System.Drawing.Color.Red;
-                GridView1.DataSource = null;
-                GridView1.DataBind();
-                GridView1.Visible = false;
-                return;
-            }
 
             // בונים טבלה עם השעות והסטטוס שלהן
             DataTable dt = new DataTable();
@@ -159,48 +154,6 @@ namespace ArielProject
             GridView1.DataSource = dt;
             GridView1.DataBind();
             GridView1.Visible = true;
-        }
-
-        // קובע את שעות הפתיחה והסגירה לפי המסעדה והיום בשבוע.
-        // השעות נשמרות בטבלת MyRestaurants ב-6 עמודות: WeekdayOpen, WeekdayClose,
-        // FriOpen, FriClose, SatOpen, SatClose - כל אחת בפורמט "HH:MM".
-        // שעות שעוברות חצות מיוצגות עם מספר גדול מ-24 (למשל 25:00 = 01:00 למחרת).
-        // אם הפתיחה והסגירה שתיהן 00:00 פירושו שהמסעדה סגורה.
-        // הפרמטר day הוא מספר שלם: 0=ראשון .. 5=שישי, 6=שבת.
-        private void GetOpeningHours(string res, int day)
-        {
-            // ברירת מחדל - שעות גנריות אם המסעדה לא נמצאת בטבלה
-            openHour = 18; openMinute = 0;
-            closeHour = 23; closeMinute = 30;
-
-            // בוחרים את זוג העמודות הנכון לפי היום:
-            // יום 5 = שישי, יום 6 = שבת, וכל השאר (0-4 = ראשון-חמישי) = חול
-            string openCol, closeCol;
-            if (day == 5) { openCol = "FriOpen"; closeCol = "FriClose"; }
-            else if (day == 6) { openCol = "SatOpen"; closeCol = "SatClose"; }
-            else { openCol = "WeekdayOpen"; closeCol = "WeekdayClose"; }
-
-            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
-            OleDbConnection con = new OleDbConnection(connStr);
-
-            // שאילתה ששולפת בדיוק את 2 הערכים שצריך - השעה הפותחת והסוגרת
-            string sql = "SELECT " + openCol + ", " + closeCol +
-                         " FROM MyRestaurants WHERE Restaurants = '" + res + "'";
-            OleDbCommand cmd = new OleDbCommand(sql, con);
-            con.Open();
-            OleDbDataReader reader = cmd.ExecuteReader();
-            if (reader.Read())
-            {
-                // הערכים בפורמט "HH:MM" - מפצלים לפי ':' לקבלת שעה ודקה
-                string[] openParts = reader[openCol].ToString().Split(':');
-                openHour = int.Parse(openParts[0]);
-                openMinute = int.Parse(openParts[1]);
-
-                string[] closeParts = reader[closeCol].ToString().Split(':');
-                closeHour = int.Parse(closeParts[0]);
-                closeMinute = int.Parse(closeParts[1]);
-            }
-            con.Close();
         }
 
         // בודק האם שעה מסוימת פנויה - סופר כמה שולחנות תפוסים בטווח של שעתיים סביבה
@@ -318,9 +271,7 @@ namespace ArielProject
                 return;
             }
 
-            // בדיקה שמספר הבית מכיל רק ספרות (במקום try/catch על int.Parse).
-            // עוברים תו-תו על המחרוזת ומוודאים שכל תו נמצא בין '0' ל-'9'.
-            // נשמר רק אם נלמד char והשוואת תווים – זו דרך בסיסית בלי try/catch.
+
             bool isAllDigits = true;
             for (int i = 0; i < house.Length; i++)
             {

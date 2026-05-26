@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AllRestaurants.aspx.cs" Inherits="ArielProject.AllRestaurants" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AllRestaurants.aspx.cs" Inherits="ArielProject.AllRestaurants" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
 
 <!DOCTYPE html>
 
@@ -29,9 +29,7 @@
         <div class="gold-divider"></div>
 
         <div class="restaurants-grid">
-            <%-- הוחלף Repeater עם <ItemTemplate> ו-Eval ב-GridView פשוט.
-                 לחיצה על כפתור הבחירה (Select) מובילה לדף הסטטיסטיקות
-                 של המסעדה (RestaurantAdmin.aspx). --%>
+
             <asp:GridView ID="GridView1" runat="server"
                 AutoGenerateColumns="True"
                 AutoGenerateSelectButton="True"

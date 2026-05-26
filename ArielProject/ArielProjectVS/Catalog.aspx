@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Catalog.aspx.cs" Inherits="ArielProject.Catalog" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Catalog.aspx.cs" Inherits="ArielProject.Catalog" %>
 
 <!DOCTYPE html>
 
@@ -63,7 +63,6 @@
     <br />
 </div>
 
-<!-- Modal window -->
 <div id="restaurantInfoModal" class="info-modal-overlay" onclick="overlayClick(event)">
     <div class="info-modal-box">
         <button type="button" class="info-modal-close" onclick="closeRestaurantInfo()">&times;</button>
@@ -87,14 +86,13 @@
     </div>
 </div>
 
-<!-- Hidden restaurant data (HTML, not JS strings) -->
 <div id="rest-data" style="display:none">
 
     <div id="rd-Bobo">
         <span class="ri-about">מסעדה איטלקית כשרה (בד"ץ בית יוסף) חדישה וצבעונית, מעוצבת בסגנון מודרני וחם. המטבח מתמחה בפסטות טריות בעבודת יד, דגים טריים, ופיצות נפוליטניות אפויות בתנור חם עם בצק אוורי וטופינגים יצירתיים.</span>
         <span class="ri-addr">רחוב חיים ויצמן 58, חולון</span>
-        <div class="ri-hours">ראשון-חמישי: 12:00 - 23:30<br />שישי: 12:00 - 15:00<br />שבת: 20:00 - 23:30</div>
-        <span class="ri-last">21:30</span>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
+        <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>פסטות טריות בעבודת יד</li>
             <li>פיצות נפוליטניות בתנור חם</li>
@@ -108,8 +106,8 @@
     <div id="rd-La-Lush">
         <span class="ri-about">בראסרי אירופאי עם נגיעות צרפתיות-איטלקיות. אווירה מיוחדת ומזמינה לארוחה ולישיבה בכל שעות היום. תפריט עשיר עם חומרי גלם איכותיים, תנור טאבון מרכזי ובר יינות איכותי.</span>
         <span class="ri-addr">רחוב סוקולוב 80, בת ים</span>
-        <div class="ri-hours">ראשון-חמישי: 09:00 - 00:00<br />שישי: 08:00 - 16:00<br />שבת: 19:00 - 00:00</div>
-        <span class="ri-last">22:00</span>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
+        <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>ארוחות בוקר בראסרי עשירות</li>
             <li>פסטות איטלקיות טריות</li>
@@ -123,8 +121,8 @@
     <div id="rd-Moses">
         <span class="ri-about">מסעדת המבורגרים פרימיום שבה כל הבשר נטחן טרי מדי יום במקום. מסעדת בשרים אמריקאית קלאסית עם אווירה משפחתית, המבורגרים עסיסיים, ומנות בשריות עשירות.</span>
         <span class="ri-addr">רחוב הברזל 30, רמת החייל, תל אביב</span>
-        <div class="ri-hours">ראשון-רביעי: 12:00 - 00:00<br />חמישי: 12:00 - 01:00<br />שישי-שבת: 12:00 - 01:00</div>
-        <span class="ri-last">22:00</span>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
+        <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>המבורגר בקר 220 גרם טחון טרי</li>
             <li>המבורגר Moses Classic</li>
@@ -138,7 +136,7 @@
     <div id="rd-Japanika">
         <span class="ri-about">רשת מסעדות אסייתית בעלת סניפים רבים בחיפה ובצפון. מתמחה בסושי איכותי, מנות יפניות ותאילנדיות, וקעריות מוקפצות. אווירה תוססת ומחירים נגישים.</span>
         <span class="ri-addr">דרך ישראל בר יהודה 111, חיפה</span>
-        <div class="ri-hours">ראשון-חמישי: 12:00 - 23:00<br />שישי: 12:00 - 15:00<br />שבת: 19:30 - 23:00</div>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
         <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>מגשי סושי מגוונים</li>
@@ -153,7 +151,7 @@
     <div id="rd-Kagas">
         <span class="ri-about">בראסרי מודרני בלב באר שבע עם אווירה אירופאית חמה. מטבח עשיר המשלב מנות בית קלאסיות עם טוויסט מקומי. מקום מצוין לארוחות עסקיות, דייטים, ומפגשי משפחה.</span>
         <span class="ri-addr">רחוב הנשיאים 4, באר שבע</span>
-        <div class="ri-hours">ראשון-חמישי: 10:00 - 23:00<br />שישי: 09:00 - 16:00<br />מוצ"ש: 20:00 - 23:30</div>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
         <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>סטייק אנטריקוט עם תוספות</li>
@@ -168,8 +166,8 @@
     <div id="rd-Vivino">
         <span class="ri-about">שגרירות הקולינריה האיטלקית של חיפה. מסעדה משתרעת על 850 מ"ר עם מעדנייה איטלקית סמוכה ואולם אירועים. הכל נעשה במקום - מהבצק ועד הגלידה. תפריט עשיר המבוסס על חומרי גלם איטלקיים מקוריים.</span>
         <span class="ri-addr">כיכר אליזבט 1, הרובע האיטלקי, חיפה</span>
-        <div class="ri-hours">ראשון-חמישי: 12:00 - 23:30<br />שישי: 12:00 - 16:00<br />מוצ"ש: 19:00 - 23:30</div>
-        <span class="ri-last">21:30</span>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
+        <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>פסטות טריות בעבודת יד</li>
             <li>פיצות בתנור עצים</li>
@@ -183,8 +181,8 @@
     <div id="rd-Mahne-Yuda">
         <span class="ri-about">מסעדת השף האייקונית של אסף גרניט ואורי נבון בלב שוק מחנה יהודה בירושלים. שילוב ייחודי של בישול ישראלי מודרני עם דגש על חומרי גלם משובחים מהשוק. אווירה תוססת ובלתי נשכחת.</span>
         <span class="ri-addr">רחוב בית יעקב 10, שוק מחנה יהודה, ירושלים</span>
-        <div class="ri-hours">ראשון-חמישי: 18:30 - 01:30<br />שישי: 12:00 - 15:30<br />שבת: סגור</div>
-        <span class="ri-last">23:30</span>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
+        <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>פולנטה Mahane Yuda המפורסמת</li>
             <li>כבד אווז עם פירות</li>
@@ -198,7 +196,7 @@
     <div id="rd-Oshi-Oshi">
         <span class="ri-about">רשת הסושי הגדולה והמוצלחת בישראל. הסניף בבאר שבע כשר על ידי הרבנות הראשית ומציע סושי באיכות גבוהה, חומרי גלם טריים, וניקיון מוקפד. אווירה צעירה ושירות מקצועי.</span>
         <span class="ri-addr">רחוב יצחק רגר 2, קניון הנגב, באר שבע</span>
-        <div class="ri-hours">ראשון-חמישי: 12:00 - 23:00<br />שישי: 11:30 - 15:00<br />מוצ"ש: 20:00 - 23:00</div>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
         <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>מגשי סושי משובחים</li>
@@ -213,7 +211,7 @@
     <div id="rd-Biga">
         <span class="ri-about">פסטה בר איטלקי קטן וחמים בבאר שבע, המתמחה בפסטות ופיצות שנעשות במקום מחומרי גלם טריים. אווירה אינטימית ומחירים סבירים. אהוב במיוחד על תושבי העיר.</span>
         <span class="ri-addr">רחוב התעשייה 51, באר שבע</span>
-        <div class="ri-hours">ראשון-חמישי: 12:00 - 23:00<br />שישי: 12:00 - 15:00<br />שבת: 19:00 - 23:00</div>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
         <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>פיצה עם זיתים וגבינת עיזים</li>
@@ -228,8 +226,8 @@
     <div id="rd-Nafis">
         <span class="ri-about">מסעדה ים תיכונית עם תפריט עשיר ומגוון, המשלב טעמים ישראליים, איטלקיים, אמריקאיים ומזרחיים תחת קורת גג אחת. אווירה מזמינה לכל המשפחה.</span>
         <span class="ri-addr">רחוב סוקולוב 31, רעננה</span>
-        <div class="ri-hours">ראשון-חמישי: 12:00 - 23:30<br />שישי: 12:00 - 16:00<br />מוצ"ש: 19:30 - 23:30</div>
-        <span class="ri-last">21:30</span>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
+        <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>מבחר סלטים ים תיכוניים</li>
             <li>סטייק אנטריקוט</li>
@@ -243,8 +241,8 @@
     <div id="rd-Zink">
         <span class="ri-about">מסעדה איטלקית-אמריקאית מאז 2003, ידועה במנות הבשר המיושנות והפסטות הטריות. תנור אבן מיוחד לדגים ובר חי תוסס. אטרקציה קולינרית במחוז המרכז.</span>
         <span class="ri-addr">רחוב עתיר ידע 6, יהוד-מונוסון</span>
-        <div class="ri-hours">ראשון-חמישי: 12:00 - 23:30<br />שישי: 12:00 - 15:30<br />מוצ"ש: 19:00 - 00:00</div>
-        <span class="ri-last">21:30</span>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
+        <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>סטייק פילה במלפלפלים חריפים</li>
             <li>שרימפס ברוטב חמאת עגבניות</li>
@@ -258,7 +256,7 @@
     <div id="rd-Max-Brener">
         <span class="ri-about">בר שוקולד וקינוחים בינלאומי. חוויה קולינרית מתוקה עם ריח שוקולד בלתי נשכח. אטרקציה גדולה למשפחות, זוגות, ולחובבי שוקולד אמיתיים. בעלת עשרות סניפים בעולם.</span>
         <span class="ri-addr">מתחם הקסטרא, רחוב פלימן 8, חיפה</span>
-        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 09:00 - 16:00<br />מוצ"ש: 20:00 - 23:00</div>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
         <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>סופלה שוקולד פיור</li>
@@ -273,7 +271,7 @@
     <div id="rd-Segev">
         <span class="ri-about">מסעדת השף של משה שגב בבאר שבע - מטבח טרי וססגוני המשלב טעמים ישראליים מודרניים עם השפעות איטלקיות. השף שגב מציע חוויה קולינרית מעודנת בלב הדרום.</span>
         <span class="ri-addr">רחוב ברוך קטינקא 2, מתחם ישפרו, באר שבע</span>
-        <div class="ri-hours">ראשון-חמישי: 12:00 - 23:00<br />שישי: 12:00 - 15:00<br />מוצ"ש: 19:30 - 23:30</div>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
         <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>פסטה ראביולי ביתי</li>
@@ -288,8 +286,8 @@
     <div id="rd-Black">
         <span class="ri-about">מסעדת המבורגרים פרימיום שמשלבת בשרים איכותיים עם חוויית בראסרי מודרנית. תפריט עשיר הכולל גם אופציות צמחוניות וטבעוניות. אווירה אורבנית ושירות אדיב.</span>
         <span class="ri-addr">קניון עזריאלי, רחוב מנחם בגין 132, תל אביב</span>
-        <div class="ri-hours">ראשון-חמישי: 12:00 - 23:30<br />שישי: 12:00 - 16:00<br />מוצ"ש: 20:00 - 23:30</div>
-        <span class="ri-last">21:30</span>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
+        <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>המבורגר Black Signature</li>
             <li>סטייק אנטריקוט מיושן</li>
@@ -303,7 +301,7 @@
     <div id="rd-Kansai">
         <span class="ri-about">מסעדת סושי כשרה (בהשגחת הרבנות הראשית תל אביב) המביאה את יפן המודרנית. השף טל אלמלח יצר תפריט יפני חדשני המשלב טכניקות מתקדמות עם חומרי גלם טריים, סושי מוקפד וקעריות צ'יראשי.</span>
         <span class="ri-addr">רחוב יגאל אלון 94, תל אביב</span>
-        <div class="ri-hours">ראשון-חמישי: 12:00 - 23:00<br />שישי: 11:30 - 14:30<br />מוצ"ש: 20:30 - 23:00</div>
+        <div class="ri-hours">ראשון-חמישי: 09:00 - 23:00<br />שישי: 08:00 - 16:00<br />שבת: 19:30 - 23:30</div>
         <span class="ri-last">21:00</span>
         <ul class="ri-dishes">
             <li>מגשי סושי שף</li>
@@ -316,7 +314,6 @@
     </div>
 
 </div>
-<!-- End hidden restaurant data -->
 
 <script type="text/javascript">
     function showRestaurantInfo(name) {

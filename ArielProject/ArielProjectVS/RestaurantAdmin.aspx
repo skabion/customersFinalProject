@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="RestaurantAdmin.aspx.cs" Inherits="ArielProject.RestaurantAdmin" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="RestaurantAdmin.aspx.cs" Inherits="ArielProject.RestaurantAdmin" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
 
 <!DOCTYPE html>
 
@@ -60,9 +60,7 @@
 
         <div class="section-title">✦ &nbsp; פילוחים וגרפים &nbsp; ✦</div>
 
-        <%-- הוחלפו 3 Repeaters עם ItemTemplate ו-Eval ב-3 Labels.
-             ה-cs בונה את ה-HTML של גרפי הבר בעצמו עם שרשור מחרוזות
-             ומציב את התוצאה ב-Label. --%>
+
         <div class="chart-grid">
             <div class="chart-card">
                 <div class="chart-title">🪑 התפלגות לפי גודל שולחן</div>
@@ -89,8 +87,7 @@
         <div class="section-title">✦ &nbsp; ההזמנות העתידיות &nbsp; ✦</div>
 
         <div class="upcoming-wrapper">
-            <%-- מיון מתבצע ב-SQL (ORDER BY InvDate ASC/DESC) - לא בקוד C#.
-                 AutoPostBack מפעיל את Page_Load מחדש שטוען את הטבלה לפי הבחירה. --%>
+
             <div class="sort-control" style="text-align:center; margin-bottom:15px;">
                 <asp:Label runat="server" Text="מיון לפי תאריך: " AssociatedControlID="DdlSort"></asp:Label>
                 <asp:DropDownList ID="DdlSort" runat="server" AutoPostBack="true">

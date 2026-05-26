@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Booking.aspx.cs" Inherits="ArielProject.Booking"%>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Booking.aspx.cs" Inherits="ArielProject.Booking"%>
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -25,17 +25,16 @@
     </div>
 
     <script type="text/javascript">
-        // הוסרה עטיפת IIFE - (function() {...})() - שלא נלמדת בתיכון.
-        // הוחלפו האופרטורים הטרנאריים (?:) ב-if/else מפורש.
 
-        var _bookingTimerInterval = null;
-        var _bookingStorageKey = "bookingTimerStart";
+
+        var bookingTimerInterval = null;
+        var bookingStorageKey = "bookingTimerStart";
 
         // פונקציה שמופעלת מקוד C# (LblClearTimer) כשהזמנה הצליחה -
         // עוצרת את הטיימר ומסתירה את הסרגל
         function clearBookingTimer() {
-            if (_bookingTimerInterval) { clearInterval(_bookingTimerInterval); }
-            sessionStorage.removeItem(_bookingStorageKey);
+            if (bookingTimerInterval) { clearInterval(bookingTimerInterval); }
+            sessionStorage.removeItem(bookingStorageKey);
             var bar = document.getElementById("timerBar");
             if (bar) { bar.style.display = "none"; }
         }
@@ -45,10 +44,10 @@
 
         // קוראים את זמן ההתחלה מ-sessionStorage. אם זו הפעם הראשונה - שומרים
         // את הזמן הנוכחי. אחרת ממירים את הערך השמור למספר.
-        var startTime = sessionStorage.getItem(_bookingStorageKey);
+        var startTime = sessionStorage.getItem(bookingStorageKey);
         if (!startTime) {
             startTime = Date.now();
-            sessionStorage.setItem(_bookingStorageKey, startTime);
+            sessionStorage.setItem(bookingStorageKey, startTime);
         } else {
             startTime = parseInt(startTime);
         }
@@ -66,7 +65,6 @@
             var m = Math.floor(secs / 60);
             var s = secs % 60;
 
-            // הוחלף האופרטור הטרנארי בבדיקת if/else מפורשת
             var mStr;
             if (m < 10) mStr = "0" + m;
             else mStr = "" + m;
@@ -83,26 +81,17 @@
             var remaining = getRemaining();
             document.getElementById("timerDisplay").textContent = formatTime(remaining);
 
-            // שינוי צבע הסרגל לפי הזמן שנותר (אדום=דחוף, כתום=אזהרה)
-            var bar = document.getElementById("timerBar");
-            bar.className = "timer-bar";
-            if (remaining <= 60) {
-                bar.className = "timer-bar urgent";
-            } else if (remaining <= 90) {
-                bar.className = "timer-bar warning";
-            }
-
             // אם הזמן נגמר - מציגים את חלון "הזמן הסתיים"
             if (remaining === 0) {
-                clearInterval(_bookingTimerInterval);
-                sessionStorage.removeItem(_bookingStorageKey);
+                clearInterval(bookingTimerInterval);
+                sessionStorage.removeItem(bookingStorageKey);
                 document.getElementById("timerExpiredOverlay").className = "timer-expired-overlay active";
             }
         }
 
         // מפעילים את הטיימר ומעדכנים את התצוגה כל שנייה (1000 מילישניות)
         updateDisplay();
-        _bookingTimerInterval = setInterval(updateDisplay, 1000);
+        bookingTimerInterval = setInterval(updateDisplay, 1000);
     </script>
 
     <form id="form1" runat="server">

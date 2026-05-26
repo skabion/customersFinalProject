@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="UserStats.aspx.cs" Inherits="ArielProject.UserStats" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="UserStats.aspx.cs" Inherits="ArielProject.UserStats" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
 
 <!DOCTYPE html>
 
@@ -59,9 +59,6 @@
 
         <div class="section-title">✦ &nbsp; פילוחים וגרפים &nbsp; ✦</div>
 
-        <%-- הוחלפו 3 Repeaters עם ItemTemplate ו-Eval ב-3 Labels.
-             ה-cs בונה את ה-HTML של גרפי הבר בעצמו (BuildBarChartHtml)
-             עם שרשור מחרוזות. --%>
         <div class="chart-grid">
             <div class="chart-card">
                 <div class="chart-title">📍 התפלגות לפי אזור</div>
@@ -135,9 +132,7 @@
             משתמשים
         </div>
 
-        <%-- הוחלף Repeater עם ItemTemplate ו-Eval ב-Label אחד.
-             ה-cs (BindFilteredUserList) בונה את ה-HTML של כל הכרטיסים
-             בלולאה אחת ומציב אותו כאן. --%>
+
         <div class="users-container">
             <asp:Label ID="LblUsersList" runat="server"></asp:Label>
 

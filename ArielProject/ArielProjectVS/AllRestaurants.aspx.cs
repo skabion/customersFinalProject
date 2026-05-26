@@ -5,7 +5,6 @@ using System.Web.UI;
 
 namespace ArielProject
 {
-    // הוסרה המחלקה RestaurantCard עם properties - הוחלפה ב-DataTable
 
     public partial class AllRestaurants : System.Web.UI.Page
     {
@@ -36,9 +35,6 @@ namespace ArielProject
         // טוען את כל המסעדות מהמסד ומציג אותן ב-GridView
         private void LoadRestaurants()
         {
-            // הוחלף AppDomain.CurrentDomain.BaseDirectory ב-Server.MapPath -
-            // סגנון אחיד לכל הפרוייקט.
-            // הוסר גם בלוק using(...) - חיבור רגיל שנסגר ידנית.
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
@@ -47,15 +43,12 @@ namespace ArielProject
             con.Open();
             OleDbDataReader reader = cmd.ExecuteReader();
 
-            // הוחלפה List<RestaurantCard> ב-DataTable עם 3 עמודות.
-            // לא צריך לשמור EncodedName - נעשה את הקידוד בלחיצה על הכפתור.
             DataTable dt = new DataTable();
             dt.Columns.Add("שם מסעדה");
             dt.Columns.Add("אזור");
             dt.Columns.Add("סוג מטבח");
 
             // קוראים כל שורה מהמסד ומוסיפים לטבלה.
-            // הוסר אתחול אובייקט (new X { ... }) - dt.Rows.Add במקום.
             while (reader.Read())
             {
                 string name = reader["Restaurants"].ToString();

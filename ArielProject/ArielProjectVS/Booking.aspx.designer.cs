@@ -98,56 +98,100 @@ namespace ArielProject
         /// <summary>
         /// TaxiPanel control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel TaxiPanel;
 
         /// <summary>
         /// LblTaxiQuestion control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label LblTaxiQuestion;
 
         /// <summary>
         /// BtnTaxiYes control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Button BtnTaxiYes;
 
         /// <summary>
         /// BtnTaxiNo control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Button BtnTaxiNo;
 
         /// <summary>
         /// AddressPanel control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel AddressPanel;
 
         /// <summary>
         /// TxtCity control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox TxtCity;
 
         /// <summary>
         /// TxtStreet control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox TxtStreet;
 
         /// <summary>
         /// TxtHouseNum control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox TxtHouseNum;
 
         /// <summary>
         /// BtnConfirmAddress control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Button BtnConfirmAddress;
 
         /// <summary>
         /// LblAddressError control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label LblAddressError;
 
         /// <summary>
         /// LblTaxiResult control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label LblTaxiResult;
     }
 }

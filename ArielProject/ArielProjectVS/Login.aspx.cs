@@ -36,9 +36,7 @@ namespace ArielProject
 
                 // אם המשתמש הוא מנהל מסעדה - שומרים את שם המסעדה ב-Session.
                 // הערך בעמודה הוא "לא" עבור מי שאינו מנהל, אחרת שם המסעדה.
-                // הוחלף האופרטור הטרנארי (?:) וההשוואה ל-DBNull.Value בקוד פשוט יותר:
-                // קריאה ל-ToString() על תא ריק במסד מחזירה מחרוזת ריקה,
-                // לכן מספיק להשוות ל-"" במקום ל-DBNull.Value.
+
                 string restAdmin = dr["RestaurantAdmin"].ToString().Trim();
                 if (restAdmin != "")
                 {
@@ -46,7 +44,6 @@ namespace ArielProject
                 }
 
                 // אם המשתמש הוא מנהל מערכת (Admin = "כן") - שומרים אותו ב-Session.
-                // אותו עיקרון כמו למעלה - בלי אופרטור טרנארי, פשוט ToString().Trim().
                 string adminFlag = dr["Admin"].ToString().Trim();
                 if (adminFlag == "כן")
                 {

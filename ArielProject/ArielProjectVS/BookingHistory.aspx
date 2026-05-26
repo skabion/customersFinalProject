@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="BookingHistory.aspx.cs" Inherits="ArielProject.BookingHistory" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="BookingHistory.aspx.cs" Inherits="ArielProject.BookingHistory" ResponseEncoding="UTF-8" ContentType="text/html; charset=utf-8" %>
 
 <!DOCTYPE html>
 
@@ -28,8 +28,7 @@
         <div class="gold-divider"></div>
 
         <div class="sort-bar">
-            <%-- הוסר הביטוי <%= DdlSort.ClientID %> שמייצר את ה-ID דינמית.
-                 פשוט מציגים "מיון לפי:" כטקסט, ה-DropDown מופיע מיד אחריו. --%>
+
             <label>מיון לפי:</label>
             <asp:DropDownList ID="DdlSort" runat="server" CssClass="sort-select"
                 AutoPostBack="true" OnSelectedIndexChanged="DdlSort_SelectedIndexChanged">
@@ -49,9 +48,7 @@
         </div>
 
         <div class="bookings-container">
-            <%-- הוחלף ה-Repeater עם <ItemTemplate> ו-Eval() ב-GridView פשוט.
-                 AutoGenerateColumns="True" יוצר אוטומטית עמודה לכל עמודת DataTable.
-                 אין כפתור Select כי זו רק תצוגה היסטורית (אין עריכה). --%>
+
             <asp:GridView ID="GridView1" runat="server"
                 AutoGenerateColumns="True"
                 Width="100%"

@@ -28,11 +28,6 @@ namespace ArielProject
 
         protected void AddUser_Click(object sender, EventArgs e)
         {
-            // ============================================================
-            // ולידציה ידנית - הוחלפו ה-RegularExpressionValidator
-            // (שדרשו ביטויים רגולריים מתקדמים) בבדיקה תו-תו עם
-            // השוואות טווחים פשוטות כמו 'A' <= c <= 'Z'.
-            // ============================================================
 
             // מנקים הודעות שגיאה קודמות
             LblNameError.Text = "";
@@ -71,7 +66,6 @@ namespace ArielProject
 
             // העדפות תזונתיות - לכל צ'קבוקס בודקים אם הוא מסומן.
             // אם כן, שומרים "כן" במשתנה, אחרת "לא".
-            // הוחלף האופרטור הטרנארי (?:) ב-if/else מפורש - יותר ברור ובסיסי.
             string vegetarian;
             if (CheckBoxVegetarian.Checked)
                 vegetarian = "כן";
@@ -130,7 +124,6 @@ namespace ArielProject
             // אזור
             string area = DropDownList1.SelectedItem.Text;  // Darom / Merkaz / Tzafon
 
-            // שים לב: כאן משתמשים בדיוק בשמות העמודות מהטבלה שלך!
             string strsql =
                 "INSERT INTO MyUsers " +
                 "(MyFullName, MyPassword, MyPhoneNumber, " +
@@ -154,26 +147,15 @@ namespace ArielProject
                 ")";
 
             OleDbCommand cmd = new OleDbCommand(strsql, con);
-            // ExecuteNonQuery מבצע שאילתות שאינן SELECT (INSERT/UPDATE/DELETE)
-            // ומחזיר את מספר השורות שהושפעו - במקרה שלנו 1 אם ההרשמה הצליחה.
+
             int y = cmd.ExecuteNonQuery();
             con.Close();
 
-            // הוסר Response.Write(y) שכתב את הספרה "1" לדף ובלבל את המשתמש.
-            // במקום זה, אם ההכנסה הצליחה (y > 0) מעבירים את המשתמש לדף ההתחברות.
             if (y > 0)
             {
                 Response.Redirect("Login.aspx");
             }
         }
-
-        // הוסרו שתי פונקציות אירוע ריקות (DropDownList1_SelectedIndexChanged
-        // ו-DropDownListArea_SelectedIndexChanged) שלא עשו כלום.
-
-        // ============================================================
-        // פונקציות ולידציה ידנית
-        // מחזירות "" אם הקלט תקין, אחרת מחזירות הודעת שגיאה.
-        // ============================================================
 
         // בודק שם מלא: לפחות 2 מילים באנגלית, כל אחת מתחילה באות גדולה
         private string ValidateName(string name)

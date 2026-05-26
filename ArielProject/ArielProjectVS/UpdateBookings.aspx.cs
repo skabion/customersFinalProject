@@ -150,7 +150,6 @@ namespace ArielProject
         {
             if (!Page.IsValid) return;
 
-            // בדיקת תקינות תאריך עם try/catch (במקום TryParse שלא נלמד)
             DateTime chosen;
             try
             {
@@ -216,10 +215,32 @@ namespace ArielProject
             dt.Columns.Add("שעה");
             dt.Columns.Add("סטטוס");
 
-            // טווח שעות 18:00-23:30 בקפיצות של 30 דקות.
-            // משתמשים ב-int במקום ב-DateTime - יותר פשוט.
-            int startMinutes = 18 * 60;
-            int endMinutes = 23 * 60 + 30;
+            // קובעים את שעות הפתיחה לפי היום בשבוע (זהה לכל המסעדות).
+            // 1=ראשון .. 5=חמישי: 9:00-23:00, 6=שישי: 8:00-16:00, 7=שבת: 19:30-23:30
+            // מוסיפים 1 ל-DayOfWeek כי הוא מחזיר 0=ראשון, ואנחנו רוצים 1=ראשון.
+            DateTime selectedDate = DateTime.Parse(date);
+            int dayNum = (int)selectedDate.DayOfWeek + 1;
+
+            int openHour, openMinute, closeHour, closeMinute;
+            if (dayNum == 6)
+            {
+                openHour = 8; openMinute = 0;
+                closeHour = 16; closeMinute = 0;
+            }
+            else if (dayNum == 7)
+            {
+                openHour = 19; openMinute = 30;
+                closeHour = 23; closeMinute = 30;
+            }
+            else
+            {
+                openHour = 9; openMinute = 0;
+                closeHour = 23; closeMinute = 0;
+            }
+
+            // אפשר להזמין רק עד שעתיים לפני הסגירה
+            int startMinutes = openHour * 60 + openMinute;
+            int endMinutes = closeHour * 60 + closeMinute - 120;
 
             int currentMinutes = startMinutes;
             while (currentMinutes <= endMinutes)
@@ -249,7 +270,7 @@ namespace ArielProject
             GridTimes.Visible = true;
         }
 
-        // בודק אם שעה ספציפית פנויה - סופר תפוסים בטווח ±2 שעות.
+        // בודק אם שעה ספציפית פנויה - סופר תפוסים בטווח 2+- שעות.
         // לא סופר את ההזמנה הנוכחית כדי שלא תיחשב כתפוסה ע"י עצמה.
         private bool CheckSpecificTime(string timeToCheck, string res, string date, int total, string type)
         {
@@ -264,7 +285,6 @@ namespace ArielProject
             else
                 timeCondition = "(InvTime > '" + start + "' AND InvTime < '" + end + "')";
 
-            // ה-NOT בסוף מחריג את ההזמנה הנוכחית שאנחנו עורכים
             string sqlCount = "SELECT COUNT(*) FROM MyBooking " +
                               "WHERE Restaurant = '" + res + "' " +
                               "AND InvDate = #" + date + "# " +
