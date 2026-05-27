@@ -83,5 +83,65 @@ namespace ArielProject
         /// BtnDelete control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Button BtnDelete;
+
+        /// <summary>
+        /// PnlTaxi control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel PnlTaxi;
+
+        /// <summary>
+        /// TaxiPanel control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel TaxiPanel;
+
+        /// <summary>
+        /// LblTaxiQuestion control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label LblTaxiQuestion;
+
+        /// <summary>
+        /// BtnTaxiYes control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button BtnTaxiYes;
+
+        /// <summary>
+        /// BtnTaxiNo control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button BtnTaxiNo;
+
+        /// <summary>
+        /// AddressPanel control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel AddressPanel;
+
+        /// <summary>
+        /// TxtCity control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox TxtCity;
+
+        /// <summary>
+        /// TxtStreet control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox TxtStreet;
+
+        /// <summary>
+        /// TxtHouseNum control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox TxtHouseNum;
+
+        /// <summary>
+        /// BtnConfirmAddress control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button BtnConfirmAddress;
+
+        /// <summary>
+        /// LblAddressError control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label LblAddressError;
+
+        /// <summary>
+        /// LblTaxiResult control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label LblTaxiResult;
     }
 }

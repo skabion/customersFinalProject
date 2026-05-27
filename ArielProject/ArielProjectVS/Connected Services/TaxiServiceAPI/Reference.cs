@@ -21,6 +21,13 @@ namespace ArielProject.TaxiServiceAPI {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/BookRide", ReplyAction="*")]
         System.Threading.Tasks.Task<ArielProject.TaxiServiceAPI.BookRideResponse> BookRideAsync(ArielProject.TaxiServiceAPI.BookRideRequest request);
+
+        // CODEGEN: נוסף ידנית - מקביל ל-BookRide. מבטל נסיעה קיימת אצל הספק.
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/CancelRide", ReplyAction="*")]
+        ArielProject.TaxiServiceAPI.CancelRideResponse CancelRide(ArielProject.TaxiServiceAPI.CancelRideRequest request);
+
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/CancelRide", ReplyAction="*")]
+        System.Threading.Tasks.Task<ArielProject.TaxiServiceAPI.CancelRideResponse> CancelRideAsync(ArielProject.TaxiServiceAPI.CancelRideRequest request);
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -48,22 +55,26 @@ namespace ArielProject.TaxiServiceAPI {
         
         [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
         public string customerName;
-        
+
         [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=1)]
         public string restaurantName;
-        
+
         [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=2)]
-        public string pickupTime;
+        public string rideDate;
 
         [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=3)]
+        public string pickupTime;
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=4)]
         public string address;
 
         public BookRideRequestBody() {
         }
 
-        public BookRideRequestBody(string customerName, string restaurantName, string pickupTime, string address) {
+        public BookRideRequestBody(string customerName, string restaurantName, string rideDate, string pickupTime, string address) {
             this.customerName = customerName;
             this.restaurantName = restaurantName;
+            this.rideDate = rideDate;
             this.pickupTime = pickupTime;
             this.address = address;
         }
@@ -103,6 +114,88 @@ namespace ArielProject.TaxiServiceAPI {
         }
     }
     
+    // ===== נוסף ידנית: מחלקות ההודעה של CancelRide (מקבילות ל-BookRide) =====
+
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
+    public partial class CancelRideRequest {
+
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="CancelRide", Namespace="http://tempuri.org/", Order=0)]
+        public ArielProject.TaxiServiceAPI.CancelRideRequestBody Body;
+
+        public CancelRideRequest() {
+        }
+
+        public CancelRideRequest(ArielProject.TaxiServiceAPI.CancelRideRequestBody Body) {
+            this.Body = Body;
+        }
+    }
+
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
+    public partial class CancelRideRequestBody {
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
+        public string customerName;
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=1)]
+        public string restaurantName;
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=2)]
+        public string rideDate;
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=3)]
+        public string rideTime;
+
+        public CancelRideRequestBody() {
+        }
+
+        public CancelRideRequestBody(string customerName, string restaurantName, string rideDate, string rideTime) {
+            this.customerName = customerName;
+            this.restaurantName = restaurantName;
+            this.rideDate = rideDate;
+            this.rideTime = rideTime;
+        }
+    }
+
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
+    public partial class CancelRideResponse {
+
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="CancelRideResponse", Namespace="http://tempuri.org/", Order=0)]
+        public ArielProject.TaxiServiceAPI.CancelRideResponseBody Body;
+
+        public CancelRideResponse() {
+        }
+
+        public CancelRideResponse(ArielProject.TaxiServiceAPI.CancelRideResponseBody Body) {
+            this.Body = Body;
+        }
+    }
+
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
+    public partial class CancelRideResponseBody {
+
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
+        public string CancelRideResult;
+
+        public CancelRideResponseBody() {
+        }
+
+        public CancelRideResponseBody(string CancelRideResult) {
+            this.CancelRideResult = CancelRideResult;
+        }
+    }
+
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     public interface WebService1SoapChannel : ArielProject.TaxiServiceAPI.WebService1Soap, System.ServiceModel.IClientChannel {
     }
@@ -135,11 +228,12 @@ namespace ArielProject.TaxiServiceAPI {
             return base.Channel.BookRide(request);
         }
         
-        public string BookRide(string customerName, string restaurantName, string pickupTime, string address) {
+        public string BookRide(string customerName, string restaurantName, string rideDate, string pickupTime, string address) {
             ArielProject.TaxiServiceAPI.BookRideRequest inValue = new ArielProject.TaxiServiceAPI.BookRideRequest();
             inValue.Body = new ArielProject.TaxiServiceAPI.BookRideRequestBody();
             inValue.Body.customerName = customerName;
             inValue.Body.restaurantName = restaurantName;
+            inValue.Body.rideDate = rideDate;
             inValue.Body.pickupTime = pickupTime;
             inValue.Body.address = address;
             ArielProject.TaxiServiceAPI.BookRideResponse retVal = ((ArielProject.TaxiServiceAPI.WebService1Soap)(this)).BookRide(inValue);
@@ -151,14 +245,48 @@ namespace ArielProject.TaxiServiceAPI {
             return base.Channel.BookRideAsync(request);
         }
         
-        public System.Threading.Tasks.Task<ArielProject.TaxiServiceAPI.BookRideResponse> BookRideAsync(string customerName, string restaurantName, string pickupTime, string address) {
+        public System.Threading.Tasks.Task<ArielProject.TaxiServiceAPI.BookRideResponse> BookRideAsync(string customerName, string restaurantName, string rideDate, string pickupTime, string address) {
             ArielProject.TaxiServiceAPI.BookRideRequest inValue = new ArielProject.TaxiServiceAPI.BookRideRequest();
             inValue.Body = new ArielProject.TaxiServiceAPI.BookRideRequestBody();
             inValue.Body.customerName = customerName;
             inValue.Body.restaurantName = restaurantName;
+            inValue.Body.rideDate = rideDate;
             inValue.Body.pickupTime = pickupTime;
             inValue.Body.address = address;
             return ((ArielProject.TaxiServiceAPI.WebService1Soap)(this)).BookRideAsync(inValue);
+        }
+
+        // ===== נוסף ידנית: מתודות CancelRide (מקבילות ל-BookRide) =====
+
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        ArielProject.TaxiServiceAPI.CancelRideResponse ArielProject.TaxiServiceAPI.WebService1Soap.CancelRide(ArielProject.TaxiServiceAPI.CancelRideRequest request) {
+            return base.Channel.CancelRide(request);
+        }
+
+        public string CancelRide(string customerName, string restaurantName, string rideDate, string rideTime) {
+            ArielProject.TaxiServiceAPI.CancelRideRequest inValue = new ArielProject.TaxiServiceAPI.CancelRideRequest();
+            inValue.Body = new ArielProject.TaxiServiceAPI.CancelRideRequestBody();
+            inValue.Body.customerName = customerName;
+            inValue.Body.restaurantName = restaurantName;
+            inValue.Body.rideDate = rideDate;
+            inValue.Body.rideTime = rideTime;
+            ArielProject.TaxiServiceAPI.CancelRideResponse retVal = ((ArielProject.TaxiServiceAPI.WebService1Soap)(this)).CancelRide(inValue);
+            return retVal.Body.CancelRideResult;
+        }
+
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<ArielProject.TaxiServiceAPI.CancelRideResponse> ArielProject.TaxiServiceAPI.WebService1Soap.CancelRideAsync(ArielProject.TaxiServiceAPI.CancelRideRequest request) {
+            return base.Channel.CancelRideAsync(request);
+        }
+
+        public System.Threading.Tasks.Task<ArielProject.TaxiServiceAPI.CancelRideResponse> CancelRideAsync(string customerName, string restaurantName, string rideDate, string rideTime) {
+            ArielProject.TaxiServiceAPI.CancelRideRequest inValue = new ArielProject.TaxiServiceAPI.CancelRideRequest();
+            inValue.Body = new ArielProject.TaxiServiceAPI.CancelRideRequestBody();
+            inValue.Body.customerName = customerName;
+            inValue.Body.restaurantName = restaurantName;
+            inValue.Body.rideDate = rideDate;
+            inValue.Body.rideTime = rideTime;
+            return ((ArielProject.TaxiServiceAPI.WebService1Soap)(this)).CancelRideAsync(inValue);
         }
     }
 }

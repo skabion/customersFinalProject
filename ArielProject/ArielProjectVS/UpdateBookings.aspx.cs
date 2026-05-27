@@ -341,10 +341,165 @@ namespace ArielProject
             cmd.ExecuteNonQuery();
             conn.Close();
 
+            // שומרים את התאריך והשעה החדשים - נצטרך אותם אם הלקוח יזמין הסעה
+            // חדשה למועד המעודכן.
+            Session["NewDate"] = TxtDate.Text;
+            Session["NewTime"] = newTime;
+
             LblMessage.Text = "ההזמנה עודכנה בהצלחה לשעה " + newTime + "!";
             LblMessage.ForeColor = System.Drawing.Color.LightGreen;
 
-            // חזרה לרשימה עם הנתונים המעודכנים
+            // במקום לחזור ישר לרשימה - עוברים לתשאול ההסעה.
+            // צריך לשאול כי ההסעה הישנה (אם הוזמנה) עדיין רשומה אצל הספק
+            // עם השעה הישנה, וצריך לבטל או לעדכן אותה.
+            PnlEdit.Visible = false;
+            PnlTaxi.Visible = true;
+
+            // איפוס הפאנל למצב התחלתי (חשוב אם מעדכנים כמה הזמנות באותו ביקור)
+            AddressPanel.Visible = false;
+            BtnTaxiYes.Visible = true;
+            BtnTaxiNo.Visible = true;
+            LblTaxiResult.Text = "";
+            LblTaxiQuestion.Visible = true;
+            LblTaxiQuestion.Text = "ההזמנה עודכנה לשעה " + newTime + ". האם ברצונך הסעה למועד החדש?";
+        }
+
+        // ============================================================
+        // מצב הסעה (PnlTaxi): תשאול הסעה אחרי עדכון ההזמנה
+        // ============================================================
+
+        // הלקוח לחץ "כן, עדכנו לי הסעה" - מבקשים ממנו את כתובת האיסוף
+        protected void BtnTaxiYes_Click(object sender, EventArgs e)
+        {
+            BtnTaxiYes.Visible = false;
+            BtnTaxiNo.Visible = false;
+            LblTaxiQuestion.Text = "אנא הזן את כתובת האיסוף";
+            AddressPanel.Visible = true;
+        }
+
+        // הלקוח לחץ "לא, בטלו את ההסעה" - מבטלים את ההסעה הישנה אצל הספק
+        protected void BtnTaxiNo_Click(object sender, EventArgs e)
+        {
+            // מבטלים את ההסעה הישנה (לפי השעה המקורית). אם לא הייתה הסעה -
+            // הספק פשוט יחזיר שלא נמצאה נסיעה לביטול, וזה בסדר.
+            string taxiMsg = CancelOriginalRide();
+
+            LblMessage.Text = "ההזמנה עודכנה. " + taxiMsg;
+            LblMessage.ForeColor = System.Drawing.Color.LightGreen;
+
+            BackToList();
+        }
+
+        // הלקוח אישר את כתובת האיסוף - בודקים את הכתובת, מבטלים את ההסעה
+        // הישנה ומזמינים הסעה חדשה לשעה ולכתובת החדשות.
+        protected void BtnConfirmAddress_Click(object sender, EventArgs e)
+        {
+            string city = TxtCity.Text.Trim();
+            string street = TxtStreet.Text.Trim();
+            string house = TxtHouseNum.Text.Trim();
+
+            // בדיקה בסיסית - כל השדות חייבים להיות מלאים
+            if (city == "" || street == "" || house == "")
+            {
+                LblAddressError.Text = "יש למלא עיר, רחוב ומספר בית.";
+                return;
+            }
+
+            // מספר הבית חייב להיות ספרות בלבד
+            bool isAllDigits = true;
+            for (int i = 0; i < house.Length; i++)
+            {
+                if (house[i] < '0' || house[i] > '9')
+                {
+                    isAllDigits = false;
+                }
+            }
+            if (!isAllDigits)
+            {
+                LblAddressError.Text = "מספר בית חייב להיות מספר.";
+                return;
+            }
+            int houseNum = int.Parse(house);
+            if (houseNum <= 0)
+            {
+                LblAddressError.Text = "מספר בית חייב להיות מספר חיובי.";
+                return;
+            }
+
+            // בדיקה שהעיר קיימת בטבלת הערים שבמסד הנתונים
+            string connStrCity = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection conCity = new OleDbConnection(connStrCity);
+            string sqlCity = "SELECT COUNT(*) FROM Cities WHERE CityName = ?";
+            OleDbCommand cmdCity = new OleDbCommand(sqlCity, conCity);
+            cmdCity.Parameters.AddWithValue("@CityName", city);
+            conCity.Open();
+            int cityCount = int.Parse(cmdCity.ExecuteScalar().ToString());
+            conCity.Close();
+
+            if (cityCount == 0)
+            {
+                LblAddressError.Text = "העיר \"" + city + "\" לא נמצאה במאגר היישובים.";
+                return;
+            }
+
+            LblAddressError.Text = "";
+
+            // קוראים את התאריך והשעה החדשים ששמרנו ב-Session
+            string newDate = "";
+            if (Session["NewDate"] != null)
+            {
+                newDate = Session["NewDate"].ToString();
+            }
+            string newTime = "";
+            if (Session["NewTime"] != null)
+            {
+                newTime = Session["NewTime"].ToString();
+            }
+            string fullAddress = street + " " + houseNum + ", " + city;
+
+            // שלב א': מבטלים את ההסעה הישנה (לפי התאריך והשעה המקוריים).
+            // שלב ב': מזמינים הסעה חדשה לתאריך, לשעה ולכתובת החדשים.
+            string taxiResult;
+            try
+            {
+                TaxiServiceAPI.WebService1SoapClient taxi = new TaxiServiceAPI.WebService1SoapClient();
+                taxi.CancelRide(Session["User"].ToString(), LblResName.Text,
+                                Session["OldDate"].ToString(), Session["OldTime"].ToString());
+                taxiResult = taxi.BookRide(Session["User"].ToString(), LblResName.Text,
+                                           newDate, newTime, fullAddress);
+            }
+            catch
+            {
+                taxiResult = "שגיאה בחיבור לחברת ההסעות. נסה שוב מאוחר יותר.";
+            }
+
+            LblMessage.Text = "ההזמנה וההסעה עודכנו. " + taxiResult;
+            LblMessage.ForeColor = System.Drawing.Color.LightGreen;
+
+            BackToList();
+        }
+
+        // מבטל אצל ספק ההסעות את ההסעה המקורית, לפי שם הלקוח, המסעדה,
+        // התאריך הישן (Session["OldDate"]) והשעה הישנה (Session["OldTime"]).
+        // מחזיר את הודעת הספק.
+        private string CancelOriginalRide()
+        {
+            try
+            {
+                TaxiServiceAPI.WebService1SoapClient taxi = new TaxiServiceAPI.WebService1SoapClient();
+                return taxi.CancelRide(Session["User"].ToString(), LblResName.Text,
+                                       Session["OldDate"].ToString(), Session["OldTime"].ToString());
+            }
+            catch
+            {
+                return "לא ניתן היה לעדכן את ספק ההסעות כעת.";
+            }
+        }
+
+        // חוזר ממצב ההסעה אל רשימת ההזמנות המעודכנת
+        private void BackToList()
+        {
+            PnlTaxi.Visible = false;
             PnlEdit.Visible = false;
             PnlList.Visible = true;
             LoadFutureBookings();
@@ -366,7 +521,11 @@ namespace ArielProject
             cmd.ExecuteNonQuery();
             con.Close();
 
-            LblMessage.Text = "ההזמנה בוטלה ונמחקה מהמערכת.";
+            // אם הוזמנה הסעה להזמנה הזו - צריך לבטל אותה גם אצל הספק,
+            // אחרת המונית תישאר רשומה לתאריך ולשעה של הזמנה שכבר לא קיימת.
+            string taxiMsg = CancelOriginalRide();
+
+            LblMessage.Text = "ההזמנה בוטלה ונמחקה מהמערכת. " + taxiMsg;
             LblMessage.ForeColor = System.Drawing.Color.Orange;
 
             // חזרה לרשימה (בלי ההזמנה שנמחקה)

@@ -316,7 +316,9 @@ namespace ArielProject
             try
             {
                 TaxiServiceAPI.WebService1SoapClient taxi = new TaxiServiceAPI.WebService1SoapClient();
-                string taxiResponse = taxi.BookRide(Session["User"].ToString(), LblResName.Text, finalTime, fullAddress);
+                // מעבירים גם את תאריך ההזמנה (TxtDate) כדי שהנסיעה תישמר עם תאריך,
+                // וכך אפשר יהיה לבטל/לעדכן אותה במדויק בהמשך.
+                string taxiResponse = taxi.BookRide(Session["User"].ToString(), LblResName.Text, TxtDate.Text, finalTime, fullAddress);
 
                 LblTaxiResult.Text = "<b>הודעה מחברת ההסעות:</b><br/>" + taxiResponse;
                 LblTaxiResult.ForeColor = System.Drawing.Color.DarkGreen;

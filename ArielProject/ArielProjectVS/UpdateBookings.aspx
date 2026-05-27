@@ -107,6 +107,50 @@
             </div>
         </asp:Panel>
 
+        <%-- ============ מצב 3: תשאול הסעה אחרי עדכון הזמנה ============
+             מוצג אחרי שהזמנה עודכנה לשעה חדשה. שואל אם הלקוח רוצה הסעה
+             למועד החדש. "לא" - מבטל את ההסעה הישנה אצל הספק.
+             "כן" - מבטל את הישנה ומזמין חדשה לפי הכתובת והשעה החדשות. --%>
+        <asp:Panel ID="PnlTaxi" runat="server" Visible="false">
+            <div class="container">
+                <asp:Panel ID="TaxiPanel" runat="server" CssClass="taxi-panel">
+                    <asp:Label ID="LblTaxiQuestion" runat="server" CssClass="taxi-question"></asp:Label>
+
+                    <asp:Button ID="BtnTaxiYes" runat="server" Text="כן, עדכנו לי הסעה"
+                        OnClick="BtnTaxiYes_Click" CssClass="btn-success" />
+                    <asp:Button ID="BtnTaxiNo" runat="server" Text="לא, בטלו את ההסעה"
+                        OnClick="BtnTaxiNo_Click" CssClass="btn-secondary" />
+
+                    <asp:Panel ID="AddressPanel" runat="server" Visible="false" CssClass="address-panel">
+                        <div class="address-title">📍 כתובת איסוף לנהג</div>
+
+                        <div class="form-input-group">
+                            <label>עיר:</label>
+                            <asp:TextBox ID="TxtCity" runat="server" CssClass="booking-input" placeholder="לדוגמה: תל אביב - יפו"></asp:TextBox>
+                        </div>
+
+                        <div class="form-input-group">
+                            <label>רחוב:</label>
+                            <asp:TextBox ID="TxtStreet" runat="server" CssClass="booking-input" placeholder="לדוגמה: דיזנגוף"></asp:TextBox>
+                        </div>
+
+                        <div class="form-input-group">
+                            <label>מספר בית:</label>
+                            <asp:TextBox ID="TxtHouseNum" runat="server" CssClass="booking-input" TextMode="Number" placeholder="לדוגמה: 12"></asp:TextBox>
+                        </div>
+
+                        <asp:Button ID="BtnConfirmAddress" runat="server" Text="✓ אישור כתובת ועדכון הסעה"
+                            OnClick="BtnConfirmAddress_Click" CssClass="btn-success-full" />
+
+                        <br /><br />
+                        <asp:Label ID="LblAddressError" runat="server" ForeColor="#ff8888" Font-Bold="True"></asp:Label>
+                    </asp:Panel>
+
+                    <asp:Label ID="LblTaxiResult" runat="server" CssClass="taxi-result"></asp:Label>
+                </asp:Panel>
+            </div>
+        </asp:Panel>
+
         <div class="nav-bar">
             <a href="PersonalArea.aspx" class="nav-btn">← חזרה לאזור האישי</a>
         </div>
