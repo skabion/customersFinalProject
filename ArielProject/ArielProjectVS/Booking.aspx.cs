@@ -26,9 +26,7 @@ namespace ArielProject
                     LblResName.Text = Request.QueryString["res"].ToString();
                 }
 
-                // הבדיקה שהתאריך עתידי הועברה לפונקציית BtnCheckTimes_Click,
-                // במקום הגדרה דינמית של ValueToCompare על ה-Validator
-                // (שלא תמיד נלמד בכיתה).
+
             }
         }
 
@@ -42,7 +40,7 @@ namespace ArielProject
                 return;
             }
 
-            // בדיקה שהתאריך עתידי (החליף את CompareValidator).
+            // בדיקה שהתאריך עתידי 
             // משווים את התאריך שהוזן לתאריך של היום.
             DateTime chosen = DateTime.Parse(TxtDate.Text);
             if (chosen < DateTime.Today)
@@ -233,8 +231,7 @@ namespace ArielProject
             TaxiPanel.Visible = true;
 
             // עצירת טיימר ההזמנה (קריאה ל-JavaScript)
-            // הוחלף מ-Literal ל-Label כי Label נלמד בכיתה.
-            // הטקסט שמוצב יוזרק לדף בתור HTML ולכן הסקריפט ירוץ.
+
             LblClearTimer.Text = "<script>clearBookingTimer();</script>";
         }
 

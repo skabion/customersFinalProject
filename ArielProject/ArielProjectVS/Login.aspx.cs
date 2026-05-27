@@ -20,9 +20,12 @@ namespace ArielProject
             con.ConnectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("") + "\\DBusers1.accdb";
             con.Open();
 
-            // 2. בניית השאילתה בשיטת שרשור מחרוזות
-            string strsql = "SELECT * FROM MyUsers WHERE MyFullName = '" + TxtFullName.Text + "' AND MyPassword = '" + TxtPassword.Text + "'";
+            // 2. בניית השאילתה עם פרמטרים (מונע SQL Injection).
+            // במקום לשרשר את הקלט לתוך המחרוזת, שמים ? ומעבירים את הערך בנפרד.
+            string strsql = "SELECT * FROM MyUsers WHERE MyFullName = ? AND MyPassword = ?";
             OleDbCommand cmd = new OleDbCommand(strsql, con);
+            cmd.Parameters.AddWithValue("@MyFullName", TxtFullName.Text);
+            cmd.Parameters.AddWithValue("@MyPassword", TxtPassword.Text);
             OleDbDataReader dr = cmd.ExecuteReader();
 
             // 3. בדיקה אם חזרו נתונים

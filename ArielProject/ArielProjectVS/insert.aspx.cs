@@ -124,29 +124,31 @@ namespace ArielProject
             // אזור
             string area = DropDownList1.SelectedItem.Text;  // Darom / Merkaz / Tzafon
 
+            // בניית השאילתה עם פרמטרים (מונע SQL Injection).
+            // כל ערך מיוצג ע"י ? ומועבר בנפרד דרך Parameters - הקלט אף פעם לא הופך לקוד SQL.
+            // ב-OleDb הסדר חשוב: הפרמטרים מתאימים לפי הסדר של ה-? בשאילתה.
             string strsql =
                 "INSERT INTO MyUsers " +
                 "(MyFullName, MyPassword, MyPhoneNumber, " +
                 "Vegetarian, Vegan, Kosher, " +
                 "Gluten, Peanuts, TreeNuts, Fish, Sesame, Milk, " +
                 "Area) " +
-                "VALUES (" +
-                "'" + SignUp_FullName.Text + "'," +      // MyFullName
-                "'" + SignUp_Password.Text + "'," +      // MyPassword
-                "'" + SignUp_Phone.Text + "'," +      // MyPhoneNumber
-                "'" + vegetarian + "'," +
-                "'" + vegan + "'," +
-                "'" + kosher + "'," +
-                "'" + gluten + "'," +
-                "'" + peanuts + "'," +
-                "'" + treeNuts + "'," +
-                "'" + fish + "'," +
-                "'" + sesame + "'," +
-                "'" + milk + "'," +
-                "'" + area + "'" +
-                ")";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             OleDbCommand cmd = new OleDbCommand(strsql, con);
+            cmd.Parameters.AddWithValue("@MyFullName", SignUp_FullName.Text);
+            cmd.Parameters.AddWithValue("@MyPassword", SignUp_Password.Text);
+            cmd.Parameters.AddWithValue("@MyPhoneNumber", SignUp_Phone.Text);
+            cmd.Parameters.AddWithValue("@Vegetarian", vegetarian);
+            cmd.Parameters.AddWithValue("@Vegan", vegan);
+            cmd.Parameters.AddWithValue("@Kosher", kosher);
+            cmd.Parameters.AddWithValue("@Gluten", gluten);
+            cmd.Parameters.AddWithValue("@Peanuts", peanuts);
+            cmd.Parameters.AddWithValue("@TreeNuts", treeNuts);
+            cmd.Parameters.AddWithValue("@Fish", fish);
+            cmd.Parameters.AddWithValue("@Sesame", sesame);
+            cmd.Parameters.AddWithValue("@Milk", milk);
+            cmd.Parameters.AddWithValue("@Area", area);
 
             int y = cmd.ExecuteNonQuery();
             con.Close();
