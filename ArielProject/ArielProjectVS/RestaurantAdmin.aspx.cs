@@ -185,9 +185,7 @@ namespace ArielProject
         }
 
         // גרף 2: 8 השעות הפופולריות ביותר.
-        // כל הספירה, הקיבוץ והמיון נעשים ב-SQL - אין יותר מיון בועות בקוד.
-        // TOP 8 + GROUP BY InvTime + ORDER BY COUNT(*) DESC = שורה אחת ב-SQL
-        // במקום ~70 שורות של ספירה ידנית + מיון בועות + חיתוך.
+
         private void BindTimeChart(string restaurant)
         {
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
@@ -289,12 +287,16 @@ namespace ArielProject
 
             // באקסס תאריך מוקף בסולמיות (#). אותו סגנון כמו בשאר הדפים בפרוייקט.
             // IIF מקונן בתוך ה-SQL מתרגם את סוג השולחן לעברית - חסך פונקציית עזר.
-            string sql = "SELECT InvDate, InvTime, Guest, PhoneNum, NumGuest, " +
-                         "IIF(TableType='Small','קטן',IIF(TableType='Medium','בינוני','גדול')) AS TableTypeHe " +
-                         "FROM MyBooking " +
-                         "WHERE Restaurant = '" + restaurant + "' " +
-                         "AND InvDate >= #" + today + "# " +
-                         "ORDER BY InvDate " + direction + ", InvTime " + direction;
+            // LEFT JOIN ל-MyUsers לפי שם הסועד (Guest = MyFullName, כפי שנשמר בהזמנה)
+            // מביא את שדות האלרגיה של המשתמש. LEFT (ולא INNER) כדי שגם הזמנה שאין לה
+            // משתמש תואם תוצג - השדות פשוט יחזרו NULL והעמודה תהיה ריקה.
+            string sql = "SELECT b.InvDate, b.InvTime, b.Guest, b.PhoneNum, b.NumGuest, " +
+                         "IIF(b.TableType='Small','קטן',IIF(b.TableType='Medium','בינוני','גדול')) AS TableTypeHe, " +
+                         "u.Gluten, u.Peanuts, u.TreeNuts, u.Fish, u.Sesame, u.Milk " +
+                         "FROM MyBooking AS b LEFT JOIN MyUsers AS u ON b.Guest = u.MyFullName " +
+                         "WHERE b.Restaurant = '" + restaurant + "' " +
+                         "AND b.InvDate >= #" + today + "# " +
+                         "ORDER BY b.InvDate " + direction + ", b.InvTime " + direction;
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
             con.Open();
@@ -307,16 +309,28 @@ namespace ArielProject
             upcoming.Columns.Add("טלפון");
             upcoming.Columns.Add("סועדים");
             upcoming.Columns.Add("שולחן");
+            upcoming.Columns.Add("אלרגיות");
 
             while (reader.Read())
             {
+                // בונים מהשדות שהגיעו מ-MyUsers מחרוזת אלרגיות אחת לתא בטבלה
+                string allergies = BuildAllergiesText(
+                    reader["Gluten"].ToString(),
+                    reader["Peanuts"].ToString(),
+                    reader["TreeNuts"].ToString(),
+                    reader["Fish"].ToString(),
+                    reader["Sesame"].ToString(),
+                    reader["Milk"].ToString()
+                );
+
                 upcoming.Rows.Add(
                     Convert.ToDateTime(reader["InvDate"]).ToString("dd/MM/yyyy"),
                     reader["InvTime"].ToString(),
                     reader["Guest"].ToString(),
                     reader["PhoneNum"].ToString(),
                     reader["NumGuest"].ToString(),
-                    reader["TableTypeHe"].ToString()
+                    reader["TableTypeHe"].ToString(),
+                    allergies
                 );
             }
             con.Close();
@@ -334,6 +348,28 @@ namespace ArielProject
                 GridView1.DataSource = upcoming;
                 GridView1.DataBind();
             }
+        }
+
+        // בונה מחרוזת אחת של האלרגיות שהסועד סימן בעת ההרשמה.
+        // מקבל את 6 שדות האלרגיה מ-MyUsers ("כן"/"לא", או "" אם הסועד לא נמצא)
+        // ומחזיר טקסט מופרד בפסיקים עם אמוג'ים - אותם אמוג'ים כמו בדף נתוני המשתמשים.
+        // אם אין אף אלרגיה - מחזיר "—" כדי שהתא לא יישאר ריק לגמרי.
+        private string BuildAllergiesText(string gluten, string peanuts, string treeNuts,
+                                          string fish, string sesame, string milk)
+        {
+            string text = "";
+            if (gluten == "כן") text = text + "🌾 גלוטן, ";
+            if (peanuts == "כן") text = text + "🥜 בוטנים, ";
+            if (treeNuts == "כן") text = text + "🌰 אגוזים, ";
+            if (fish == "כן") text = text + "🐟 דגים, ";
+            if (sesame == "כן") text = text + "🌿 שומשום, ";
+            if (milk == "כן") text = text + "🥛 חלב, ";
+
+            // אין אלרגיות - מציגים מקף במקום תא ריק
+            if (text == "") return "—";
+
+            // מסירים את ", " שנוסף בסוף האלרגיה האחרונה
+            return text.Substring(0, text.Length - 2);
         }
 
         // ממיר את הספירות לאחוזים יחסית לערך המקסימלי.

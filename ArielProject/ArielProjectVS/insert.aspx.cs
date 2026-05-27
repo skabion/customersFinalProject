@@ -3,7 +3,6 @@ using System.Data.OleDb;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-// הוסרו using System.Collections.Generic ו-using System.Linq - לא היו בשימוש בקובץ
 
 namespace ArielProject
 {
