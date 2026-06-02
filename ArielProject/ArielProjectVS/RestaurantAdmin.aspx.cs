@@ -5,9 +5,6 @@ using System.Web.UI;
 
 namespace ArielProject
 {
-    // הוסרו 3 המחלקות שהיו: AdminBookingRow, BarItem, UpcomingRow
-    // הוחלפו ב-DataTable (לנתוני הזמנות + טבלת קרובות)
-    // ובמערכים מקבילים (לנתוני גרפי בר).
 
     public partial class RestaurantAdmin : System.Web.UI.Page
     {
@@ -42,7 +39,6 @@ namespace ArielProject
             if (isSysAdmin)
             {
                 string qRest = Request.QueryString["restaurant"];
-                // הוחלף string.IsNullOrEmpty בבדיקה ידנית של null או ""
                 if (qRest != null && qRest != "")
                 {
                     restaurantToShow = qRest;
@@ -90,7 +86,6 @@ namespace ArielProject
 
         // טוען את כל הסטטיסטיקות והגרפים עבור מסעדה.
         // כל פונקציה מריצה שאילתת SQL משלה - אין יותר טעינה כללית ל-DataTable
-        // (הוסרה LoadAllBookings) ואין יותר ספירה/מיון/קיבוץ בקוד C#.
         private void LoadStatistics(string restaurant)
         {
             LoadKPIs(restaurant);
@@ -99,22 +94,22 @@ namespace ArielProject
             BindDayOfWeekChart(restaurant);
         }
 
-        // מחשב את 4 ה-KPIs בשאילתת SQL אחת עם פונקציות צבירה.
-        // החליף לולאת for של 33 שורות שעברה על כל ההזמנות וחישבה ידנית.
-        // IIF(cond, val1, val2) = if/else באקסס. SUM(IIF(...,1,0)) = ספירה מותנית.
+
         private void LoadKPIs(string restaurant)
         {
-            string today = DateTime.Today.ToString("yyyy-MM-dd");
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
             string sql = "SELECT COUNT(*) AS Total, " +
-                         "SUM(IIF(InvDate >= #" + today + "#, 1, 0)) AS Upcoming, " +
-                         "SUM(IIF(InvDate < #" + today + "#, NumGuest, 0)) AS PastGuests, " +
+                         "SUM(IIF(InvDate >= ?, 1, 0)) AS Upcoming, " +
+                         "SUM(IIF(InvDate < ?, NumGuest, 0)) AS PastGuests, " +
                          "AVG(NumGuest) AS AvgGuests " +
-                         "FROM MyBooking WHERE Restaurant = '" + restaurant + "'";
+                         "FROM MyBooking WHERE Restaurant = ?";
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
+            cmd.Parameters.AddWithValue("?", DateTime.Today);
+            cmd.Parameters.AddWithValue("?", DateTime.Today);
+            cmd.Parameters.AddWithValue("?", restaurant);
             con.Open();
             OleDbDataReader reader = cmd.ExecuteReader();
 
@@ -150,11 +145,14 @@ namespace ArielProject
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
-            string sql = "SELECT 'קטן (עד 2)' AS Lbl, COUNT(*) AS Cnt FROM MyBooking WHERE Restaurant='" + restaurant + "' AND TableType='Small' " +
-                         "UNION ALL SELECT 'בינוני (3-4)', COUNT(*) FROM MyBooking WHERE Restaurant='" + restaurant + "' AND TableType='Medium' " +
-                         "UNION ALL SELECT 'גדול (5+)', COUNT(*) FROM MyBooking WHERE Restaurant='" + restaurant + "' AND TableType='Large'";
+            string sql = "SELECT 'קטן (עד 2)' AS Lbl, COUNT(*) AS Cnt FROM MyBooking WHERE Restaurant=? AND TableType='Small' " +
+                         "UNION ALL SELECT 'בינוני (3-4)', COUNT(*) FROM MyBooking WHERE Restaurant=? AND TableType='Medium' " +
+                         "UNION ALL SELECT 'גדול (5+)', COUNT(*) FROM MyBooking WHERE Restaurant=? AND TableType='Large'";
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
+            cmd.Parameters.AddWithValue("?", restaurant);
+            cmd.Parameters.AddWithValue("?", restaurant);
+            cmd.Parameters.AddWithValue("?", restaurant);
             con.Open();
             OleDbDataReader reader = cmd.ExecuteReader();
 
@@ -197,11 +195,12 @@ namespace ArielProject
             // TOP 8 מחזיר רק את 8 השורות הראשונות.
             string sql = "SELECT TOP 8 InvTime, COUNT(*) AS Cnt " +
                          "FROM MyBooking " +
-                         "WHERE Restaurant = '" + restaurant + "' " +
+                         "WHERE Restaurant = ? " +
                          "GROUP BY InvTime " +
                          "ORDER BY COUNT(*) DESC, InvTime ASC";
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
+            cmd.Parameters.AddWithValue("?", restaurant);
             con.Open();
             OleDbDataReader reader = cmd.ExecuteReader();
 
@@ -255,10 +254,11 @@ namespace ArielProject
             OleDbConnection con = new OleDbConnection(connStr);
 
             string sql = "SELECT WEEKDAY(InvDate) AS DayNum, COUNT(*) AS Cnt " +
-                         "FROM MyBooking WHERE Restaurant = '" + restaurant + "' " +
+                         "FROM MyBooking WHERE Restaurant = ? " +
                          "GROUP BY WEEKDAY(InvDate)";
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
+            cmd.Parameters.AddWithValue("?", restaurant);
             con.Open();
             OleDbDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -278,14 +278,15 @@ namespace ArielProject
         // הסינון "רק עתידיות" נעשה גם הוא ב-SQL (WHERE InvDate >= #today#).
         private void BindUpcomingTable(string restaurant)
         {
-            // הכיוון "ASC" או "DESC" מגיע ישירות מה-Value של ה-DropDownList
+            // הכיוון "ASC" או "DESC" מגיע מה-DropDownList. בדיקת whitelist
+            // כי ORDER BY לא ניתן לפרמטור - חייבים לאמת ידנית.
             string direction = DdlSort.SelectedValue;
+            if (direction != "ASC" && direction != "DESC")
+                direction = "ASC";
 
-            string today = DateTime.Today.ToString("yyyy-MM-dd");
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
-            // באקסס תאריך מוקף בסולמיות (#). אותו סגנון כמו בשאר הדפים בפרוייקט.
             // IIF מקונן בתוך ה-SQL מתרגם את סוג השולחן לעברית - חסך פונקציית עזר.
             // LEFT JOIN ל-MyUsers לפי שם הסועד (Guest = MyFullName, כפי שנשמר בהזמנה)
             // מביא את שדות האלרגיה של המשתמש. LEFT (ולא INNER) כדי שגם הזמנה שאין לה
@@ -294,11 +295,12 @@ namespace ArielProject
                          "IIF(b.TableType='Small','קטן',IIF(b.TableType='Medium','בינוני','גדול')) AS TableTypeHe, " +
                          "u.Gluten, u.Peanuts, u.TreeNuts, u.Fish, u.Sesame, u.Milk " +
                          "FROM MyBooking AS b LEFT JOIN MyUsers AS u ON b.Guest = u.MyFullName " +
-                         "WHERE b.Restaurant = '" + restaurant + "' " +
-                         "AND b.InvDate >= #" + today + "# " +
+                         "WHERE b.Restaurant = ? AND b.InvDate >= ? " +
                          "ORDER BY b.InvDate " + direction + ", b.InvTime " + direction;
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
+            cmd.Parameters.AddWithValue("?", restaurant);
+            cmd.Parameters.AddWithValue("?", DateTime.Today);
             con.Open();
             OleDbDataReader reader = cmd.ExecuteReader();
 
@@ -373,7 +375,6 @@ namespace ArielProject
         }
 
         // ממיר את הספירות לאחוזים יחסית לערך המקסימלי.
-        // הוחלפו LINQ של Max ו-foreach במערכים פשוטים עם לולאת for.
         private void ApplyPercentages(int[] counts, int[] percents)
         {
             // מציאת הערך המקסימלי בלולאה
@@ -396,8 +397,6 @@ namespace ArielProject
         }
 
         // בונה את ה-HTML של גרף הברים על-ידי שרשור מחרוזות.
-        // זה החליף את ה-Repeater שיצר את הברים אוטומטית עם templates.
-        // colorClass: "" (זהב), "purple", "green" - לצביעת הברים בצבעים שונים.
         private string BuildBarChartHtml(string[] labels, int[] counts, int[] percents, string colorClass)
         {
             // מחליטים על המחלקה של ה-fill לפי הצבע המבוקש

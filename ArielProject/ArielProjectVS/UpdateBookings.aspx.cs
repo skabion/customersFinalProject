@@ -5,9 +5,7 @@ using System.Web.UI;
 
 namespace ArielProject
 {
-    // דף משולב: גם רשימת ההזמנות העתידיות (PnlList) וגם טופס עריכת הזמנה
-    // בודדת (PnlEdit). שני המצבים מתחלפים על אותו דף - בלי redirect.
-    // איחד את הדפים MyBookings.aspx ו-Update.aspx שהיו קודם נפרדים.
+
     public partial class UpdateBookings : System.Web.UI.Page
     {
         protected void Page_Load(object sender, EventArgs e)
@@ -42,15 +40,14 @@ namespace ArielProject
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
-            // באקסס תאריך מוקף בסולמיות (#) במקום בגרשיים.
-            string today = DateTime.Today.ToString("yyyy-MM-dd");
             string sql = "SELECT Restaurant, InvDate, InvTime, NumGuest, TableType " +
                          "FROM MyBooking " +
-                         "WHERE PhoneNum = '" + Session["Phone"].ToString() + "' " +
-                         "AND InvDate >= #" + today + "# " +
+                         "WHERE PhoneNum = ? AND InvDate >= ? " +
                          "ORDER BY InvDate, InvTime";
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
+            cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
+            cmd.Parameters.AddWithValue("?", DateTime.Today);
             con.Open();
             OleDbDataReader reader = cmd.ExecuteReader();
 
@@ -113,11 +110,12 @@ namespace ArielProject
             OleDbConnection conn = new OleDbConnection(connStr);
 
             string sql = "SELECT * FROM MyBooking " +
-                         "WHERE PhoneNum = '" + Session["Phone"].ToString() + "' " +
-                         "AND InvDate = #" + date + "# " +
-                         "AND InvTime = '" + time + "'";
+                         "WHERE PhoneNum = ? AND InvDate = ? AND InvTime = ?";
 
             OleDbCommand cmd = new OleDbCommand(sql, conn);
+            cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
+            cmd.Parameters.AddWithValue("?", DateTime.Parse(date));
+            cmd.Parameters.AddWithValue("?", time);
             conn.Open();
             OleDbDataReader reader = cmd.ExecuteReader();
 
@@ -205,8 +203,9 @@ namespace ArielProject
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
-            string sqlCap = "SELECT " + tableType + " FROM MyRestaurants WHERE Restaurants = '" + res + "'";
+            string sqlCap = "SELECT " + tableType + " FROM MyRestaurants WHERE Restaurants = ?";
             OleDbCommand cmdCap = new OleDbCommand(sqlCap, con);
+            cmdCap.Parameters.AddWithValue("?", res);
             con.Open();
             int totalTables = int.Parse(cmdCap.ExecuteScalar().ToString());
             con.Close();
@@ -281,22 +280,30 @@ namespace ArielProject
             // אם הטווח חוצה חצות - תנאי OR במקום AND
             string timeCondition;
             if (start.CompareTo(end) > 0)
-                timeCondition = "(InvTime > '" + start + "' OR InvTime < '" + end + "')";
+                timeCondition = "(InvTime > ? OR InvTime < ?)";
             else
-                timeCondition = "(InvTime > '" + start + "' AND InvTime < '" + end + "')";
+                timeCondition = "(InvTime > ? AND InvTime < ?)";
 
             string sqlCount = "SELECT COUNT(*) FROM MyBooking " +
-                              "WHERE Restaurant = '" + res + "' " +
-                              "AND InvDate = #" + date + "# " +
+                              "WHERE Restaurant = ? " +
+                              "AND InvDate = ? " +
                               "AND " + timeCondition + " " +
-                              "AND TableType = '" + type + "' " +
-                              "AND NOT (PhoneNum = '" + Session["Phone"].ToString() + "' " +
-                              "AND InvDate = #" + Session["OldDate"].ToString() + "# " +
-                              "AND InvTime = '" + Session["OldTime"].ToString() + "')";
+                              "AND TableType = ? " +
+                              "AND NOT (PhoneNum = ? " +
+                              "AND InvDate = ? " +
+                              "AND InvTime = ?)";
 
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
             OleDbCommand cmd = new OleDbCommand(sqlCount, con);
+            cmd.Parameters.AddWithValue("?", res);
+            cmd.Parameters.AddWithValue("?", DateTime.Parse(date));
+            cmd.Parameters.AddWithValue("?", start);
+            cmd.Parameters.AddWithValue("?", end);
+            cmd.Parameters.AddWithValue("?", type);
+            cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
+            cmd.Parameters.AddWithValue("?", DateTime.Parse(Session["OldDate"].ToString()));
+            cmd.Parameters.AddWithValue("?", Session["OldTime"].ToString());
             con.Open();
             int occupied = int.Parse(cmd.ExecuteScalar().ToString());
             con.Close();
@@ -328,15 +335,17 @@ namespace ArielProject
             OleDbConnection conn = new OleDbConnection(connStr);
 
             string sql = "UPDATE MyBooking SET " +
-                         "InvDate = #" + TxtDate.Text + "#, " +
-                         "InvTime = '" + newTime + "', " +
-                         "NumGuest = '" + TxtNumGuests.Text + "', " +
-                         "TableType = '" + Session["SelectedTypeUpdate"].ToString() + "' " +
-                         "WHERE PhoneNum = '" + Session["Phone"].ToString() + "' " +
-                         "AND InvDate = #" + Session["OldDate"].ToString() + "# " +
-                         "AND InvTime = '" + Session["OldTime"].ToString() + "'";
+                         "InvDate = ?, InvTime = ?, NumGuest = ?, TableType = ? " +
+                         "WHERE PhoneNum = ? AND InvDate = ? AND InvTime = ?";
 
             OleDbCommand cmd = new OleDbCommand(sql, conn);
+            cmd.Parameters.AddWithValue("?", DateTime.Parse(TxtDate.Text));
+            cmd.Parameters.AddWithValue("?", newTime);
+            cmd.Parameters.AddWithValue("?", TxtNumGuests.Text);
+            cmd.Parameters.AddWithValue("?", Session["SelectedTypeUpdate"].ToString());
+            cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
+            cmd.Parameters.AddWithValue("?", DateTime.Parse(Session["OldDate"].ToString()));
+            cmd.Parameters.AddWithValue("?", Session["OldTime"].ToString());
             conn.Open();
             cmd.ExecuteNonQuery();
             conn.Close();
@@ -512,11 +521,12 @@ namespace ArielProject
             OleDbConnection con = new OleDbConnection(connStr);
 
             string sql = "DELETE FROM MyBooking " +
-                         "WHERE PhoneNum = '" + Session["Phone"].ToString() + "' " +
-                         "AND InvDate = #" + Session["OldDate"].ToString() + "# " +
-                         "AND InvTime = '" + Session["OldTime"].ToString() + "'";
+                         "WHERE PhoneNum = ? AND InvDate = ? AND InvTime = ?";
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
+            cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
+            cmd.Parameters.AddWithValue("?", DateTime.Parse(Session["OldDate"].ToString()));
+            cmd.Parameters.AddWithValue("?", Session["OldTime"].ToString());
             con.Open();
             cmd.ExecuteNonQuery();
             con.Close();

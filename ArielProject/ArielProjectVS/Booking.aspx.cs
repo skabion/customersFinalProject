@@ -85,8 +85,9 @@ namespace ArielProject
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
-            string sqlCap = "SELECT " + tableType + " FROM MyRestaurants WHERE Restaurants = '" + res + "'";
+            string sqlCap = "SELECT " + tableType + " FROM MyRestaurants WHERE Restaurants = ?";
             OleDbCommand cmdCap = new OleDbCommand(sqlCap, con);
+            cmdCap.Parameters.AddWithValue("?", res);
             con.Open();
             int totalTables = int.Parse(cmdCap.ExecuteScalar().ToString());
             con.Close();
@@ -165,21 +166,25 @@ namespace ArielProject
             string timeCondition;
             if (String.Compare(start, end) > 0)
             {
-                timeCondition = "(InvTime > '" + start + "' OR InvTime < '" + end + "')";
+                timeCondition = "(InvTime > ? OR InvTime < ?)";
             }
             else
             {
-                timeCondition = "(InvTime > '" + start + "' AND InvTime < '" + end + "')";
+                timeCondition = "(InvTime > ? AND InvTime < ?)";
             }
 
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
-            string sqlCount = "SELECT COUNT(*) FROM MyBooking WHERE Restaurant='" + res +
-                              "' AND InvDate=#" + date + "# AND " + timeCondition +
-                              " AND TableType='" + type + "'";
+            string sqlCount = "SELECT COUNT(*) FROM MyBooking WHERE Restaurant=? AND InvDate=? AND " +
+                              timeCondition + " AND TableType=?";
 
             OleDbCommand cmd = new OleDbCommand(sqlCount, con);
+            cmd.Parameters.AddWithValue("?", res);
+            cmd.Parameters.AddWithValue("?", DateTime.Parse(date));
+            cmd.Parameters.AddWithValue("?", start);
+            cmd.Parameters.AddWithValue("?", end);
+            cmd.Parameters.AddWithValue("?", type);
             con.Open();
             int occupied = int.Parse(cmd.ExecuteScalar().ToString());
             con.Close();
@@ -210,12 +215,18 @@ namespace ArielProject
             string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection con = new OleDbConnection(connStr);
 
-            string sql = "INSERT INTO MyBooking (Guest, PhoneNum, InvDate, NumGuest, InvTime, Restaurant, TableType) " +
-                         "VALUES ('" + Session["User"] + "', '" + Session["Phone"] + "', #" + TxtDate.Text +
-                         "#, '" + TxtGuests.Text + "', '" + finalTime + "', '" + LblResName.Text +
-                         "', '" + Session["SelectedType"] + "')";
+            string sql = @"INSERT INTO MyBooking
+                            (Guest, PhoneNum, InvDate, NumGuest, InvTime, Restaurant, TableType)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
+            cmd.Parameters.AddWithValue("?", Session["User"].ToString());
+            cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
+            cmd.Parameters.AddWithValue("?", DateTime.Parse(TxtDate.Text));
+            cmd.Parameters.AddWithValue("?", TxtGuests.Text);
+            cmd.Parameters.AddWithValue("?", finalTime);
+            cmd.Parameters.AddWithValue("?", LblResName.Text);
+            cmd.Parameters.AddWithValue("?", Session["SelectedType"].ToString());
             con.Open();
             cmd.ExecuteNonQuery();
             con.Close();
@@ -292,8 +303,9 @@ namespace ArielProject
             // בדיקה שהעיר קיימת בטבלת הערים שבמסד הנתונים
             string connStrCity = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
             OleDbConnection conCity = new OleDbConnection(connStrCity);
-            string sqlCity = "SELECT COUNT(*) FROM Cities WHERE CityName = '" + city + "'";
+            string sqlCity = "SELECT COUNT(*) FROM Cities WHERE CityName = ?";
             OleDbCommand cmdCity = new OleDbCommand(sqlCity, conCity);
+            cmdCity.Parameters.AddWithValue("?", city);
             conCity.Open();
             int cityCount = int.Parse(cmdCity.ExecuteScalar().ToString());
             conCity.Close();

@@ -3,7 +3,6 @@ using System.Data.OleDb;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-// הוסרו using System.Collections.Generic ו-using System.Linq - לא היו בשימוש
 
 namespace ArielProject
 {
@@ -19,19 +18,25 @@ namespace ArielProject
             con.ConnectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("") + "\\DBusers1.accdb";
             con.Open();
 
-            // שאילתה בסיסית
+            // בונים את השאילתה דינמית לפי הפילטרים הנבחרים, ומוסיפים פרמטר
+            // לכל סינון משתמש (Region/FoodType) - כך הערך מועבר בנפרד ולא משורשר.
+            OleDbCommand cmd = new OleDbCommand();
+            cmd.Connection = con;
+
             string strsql = "SELECT * FROM MyRestaurants WHERE 1=1 ";
 
             // סינון אזור
             if (DdlRegion.SelectedValue != "הכל")
             {
-                strsql += " AND Region = '" + DdlRegion.SelectedValue + "' ";
+                strsql += " AND Region = ? ";
+                cmd.Parameters.AddWithValue("?", DdlRegion.SelectedValue);
             }
 
             // סינון סוג מטבח
             if (DdlType.SelectedValue != "הכל")
             {
-                strsql += " AND FoodType = '" + DdlType.SelectedValue + "' ";
+                strsql += " AND FoodType = ? ";
+                cmd.Parameters.AddWithValue("?", DdlType.SelectedValue);
             }
 
             // סינון כשרות
@@ -45,7 +50,7 @@ namespace ArielProject
                 strsql += " AND ReplacementMeals = 'כן' ";
             }
 
-            OleDbCommand cmd = new OleDbCommand(strsql, con);
+            cmd.CommandText = strsql;
             OleDbDataReader dr = cmd.ExecuteReader();
 
             DataListRestaurants.DataSource = dr;

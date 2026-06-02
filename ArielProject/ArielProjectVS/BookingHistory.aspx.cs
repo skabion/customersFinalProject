@@ -38,12 +38,11 @@ namespace ArielProject
             OleDbConnection con = new OleDbConnection(connStr);
 
             // מוחק רק את ההזמנות של המשתמש המחובר (PhoneNum) שתאריכן עבר
-            string today = DateTime.Today.ToString("yyyy-MM-dd");
-            string sql = "DELETE FROM MyBooking " +
-                         "WHERE PhoneNum = '" + Session["Phone"].ToString() + "' " +
-                         "AND InvDate < #" + today + "#";
+            string sql = "DELETE FROM MyBooking WHERE PhoneNum = ? AND InvDate < ?";
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
+            cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
+            cmd.Parameters.AddWithValue("?", DateTime.Today);
             con.Open();
             cmd.ExecuteNonQuery();
             con.Close();
@@ -71,18 +70,18 @@ namespace ArielProject
                 orderBy = "b.InvDate DESC, b.InvTime DESC";
 
             // INNER JOIN מחבר את MyBooking ל-MyRestaurants לפי שם המסעדה.
-            string today = DateTime.Today.ToString("yyyy-MM-dd");
             string sql = "SELECT b.Restaurant, b.InvDate, b.InvTime, b.NumGuest, " +
                          "IIF(b.TableType='Small','קטן (עד 2 סועדים)'," +
                          "IIF(b.TableType='Medium','בינוני (3-4 סועדים)','גדול (5+ סועדים)')) AS TableTypeHe, " +
                          "r.FoodType, r.Region " +
                          "FROM MyBooking AS b INNER JOIN MyRestaurants AS r " +
                          "ON b.Restaurant = r.Restaurants " +
-                         "WHERE b.PhoneNum = '" + Session["Phone"].ToString() + "' " +
-                         "AND b.InvDate < #" + today + "# " +
+                         "WHERE b.PhoneNum = ? AND b.InvDate < ? " +
                          "ORDER BY " + orderBy;
 
             OleDbCommand cmd = new OleDbCommand(sql, con);
+            cmd.Parameters.AddWithValue("?", Session["Phone"].ToString());
+            cmd.Parameters.AddWithValue("?", DateTime.Today);
             con.Open();
             OleDbDataReader reader = cmd.ExecuteReader();
 
