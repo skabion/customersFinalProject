@@ -119,6 +119,9 @@
                     <asp:HyperLink ID="LnkUserStats" runat="server" NavigateUrl="UserStats.aspx" CssClass="admin-action-btn">
                         👥 נתוני משתמשים
                     </asp:HyperLink>
+                    <asp:HyperLink ID="LnkAddRestaurant" runat="server" NavigateUrl="AddRestaurant.aspx" CssClass="admin-action-btn">
+                        ➕ הוספת מסעדה חדשה
+                    </asp:HyperLink>
                 </div>
             </div>
         </asp:Panel>

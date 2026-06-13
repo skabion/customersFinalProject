@@ -68,6 +68,8 @@
         <button type="button" class="info-modal-close" onclick="closeRestaurantInfo()">&times;</button>
         <h2 class="info-modal-title" id="modalTitle"></h2>
         <div class="info-modal-section" id="modalAbout"></div>
+        <%-- חלקי הפרטים המורחבים. מוסתרים יחד עבור מסעדה שנוספה דרך דף המנהל ואין לה בלוק rd-* --%>
+        <div id="modalDetailSections">
         <div class="info-modal-section">📍 <b>כתובת:</b> <span id="modalAddress"></span></div>
         <div class="info-modal-map" id="modalMapContainer" style="display:none;">
             <iframe id="modalMapFrame" src="" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -82,6 +84,7 @@
             <ul class="info-modal-dishes" id="modalDishes"></ul>
         </div>
         <div class="info-modal-rating" id="modalRating"></div>
+        </div>
         <a id="modalBookBtn" class="info-modal-book-btn" href="#">הזמן שולחן במסעדה</a>
     </div>
 </div>
@@ -319,16 +322,29 @@
     function showRestaurantInfo(name) {
         var id = "rd-" + name.replace(/ /g, "-");
         var d = document.getElementById(id);
-        if (!d) { return; }
 
+        // הכותרת וכפתור ההזמנה מוצגים תמיד, גם אם אין פרטים מורחבים
         document.getElementById("modalTitle").innerText = name;
+        document.getElementById("modalBookBtn").href = "Booking.aspx?res=" + encodeURIComponent(name);
+
+        var details = document.getElementById("modalDetailSections");
+
+        // מסעדה שנוספה דרך דף המנהל אין לה בלוק פרטים מורחב (rd-*).
+        // מציגים הודעה נקייה ומסתירים את חלקי הפרטים, כדי שכלום לא ייראה שבור.
+        if (!d) {
+            document.getElementById("modalAbout").innerText = "אין מידע נוסף על מסעדה זו עדיין.";
+            details.style.display = "none";
+            document.getElementById("restaurantInfoModal").classList.add("active");
+            return;
+        }
+
+        details.style.display = "";
         document.getElementById("modalAbout").innerText = d.querySelector(".ri-about").innerText;
         document.getElementById("modalAddress").innerText = d.querySelector(".ri-addr").innerText;
         document.getElementById("modalHours").innerHTML = d.querySelector(".ri-hours").innerHTML;
         document.getElementById("modalLastBooking").innerText = d.querySelector(".ri-last").innerText;
         document.getElementById("modalDishes").innerHTML = d.querySelector(".ri-dishes").innerHTML;
         document.getElementById("modalRating").innerText = d.querySelector(".ri-rating").innerText;
-        document.getElementById("modalBookBtn").href = "Booking.aspx?res=" + encodeURIComponent(name);
 
         var address = d.querySelector(".ri-addr").innerText.trim();
         var mapContainer = document.getElementById("modalMapContainer");

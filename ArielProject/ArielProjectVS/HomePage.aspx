@@ -41,7 +41,7 @@
             </div>
             <div class="card">
                 <span class="card-icon">🍽️</span>
-                <h3>15 מסעדות מובחרות</h3>
+                <h3> מסעדות מובחרות</h3>
                 <p>קולינריה ממיטב המסעדות בישראל — מהצפון ועד הדרום</p>
             </div>
             <div class="card">
