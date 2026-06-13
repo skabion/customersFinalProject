@@ -150,6 +150,15 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.TextBox TxtCity;
 
         /// <summary>
+        /// LitCities control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal LitCities;
+
+        /// <summary>
         /// TxtStreet control.
         /// </summary>
         /// <remarks>

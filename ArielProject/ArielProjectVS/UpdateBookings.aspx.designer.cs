@@ -120,6 +120,11 @@ namespace ArielProject
         protected global::System.Web.UI.WebControls.TextBox TxtCity;
 
         /// <summary>
+        /// LitCities control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal LitCities;
+
+        /// <summary>
         /// TxtStreet control.
         /// </summary>
         protected global::System.Web.UI.WebControls.TextBox TxtStreet;

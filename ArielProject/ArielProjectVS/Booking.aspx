@@ -160,7 +160,10 @@
 
                     <div class="form-input-group">
                         <label>עיר:</label>
-                        <asp:TextBox ID="TxtCity" runat="server" CssClass="booking-input" placeholder="לדוגמה: תל אביב - יפו"></asp:TextBox>
+                        <asp:TextBox ID="TxtCity" runat="server" CssClass="booking-input" list="cityList" placeholder="התחל להקליד שם עיר ובחר מהרשימה"></asp:TextBox>
+                        <%-- datalist נותן שדה עם חיפוש תוך כדי הקלדה. הערים נטענות מהמסד
+                             דרך LitCities ב-Page_Load. עוזר למי שלא בטוח באיות או לערים עם כמה נוסחים. --%>
+                        <datalist id="cityList"><asp:Literal ID="LitCities" runat="server"></asp:Literal></datalist>
                     </div>
 
                     <div class="form-input-group">

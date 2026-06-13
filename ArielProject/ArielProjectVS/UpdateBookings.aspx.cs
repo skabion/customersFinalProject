@@ -24,6 +24,10 @@ namespace ArielProject
             TxtDate.Attributes["min"] = todayStr;
             CompareValidatorDate.ValueToCompare = todayStr;
 
+            // טוענים את רשימת הערים ל-datalist בכל טעינה, כדי שהיא תהיה זמינה
+            // כשפאנל הכתובת של ההסעה מוצג (גם אחרי postback).
+            LoadCities();
+
             if (!IsPostBack)
             {
                 LoadFutureBookings();
@@ -559,6 +563,30 @@ namespace ArielProject
                 return "גדול (5+ סועדים)";
             else
                 return type;
+        }
+
+        // טוען את כל שמות הערים מטבלת Cities אל ה-datalist (cityList),
+        // כך ששדה העיר הופך לשדה עם חיפוש תוך כדי הקלדה.
+        private void LoadCities()
+        {
+            string connStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Server.MapPath("DBusers1.accdb");
+            OleDbConnection con = new OleDbConnection(connStr);
+
+            string sql = "SELECT CityName FROM Cities ORDER BY CityName";
+            OleDbCommand cmd = new OleDbCommand(sql, con);
+            con.Open();
+            OleDbDataReader reader = cmd.ExecuteReader();
+
+            // בונים <option> לכל עיר. HtmlEncode ליתר ביטחון על תווים מיוחדים בשם.
+            string options = "";
+            while (reader.Read())
+            {
+                string city = reader["CityName"].ToString();
+                options = options + "<option value=\"" + Server.HtmlEncode(city) + "\"></option>";
+            }
+            con.Close();
+
+            LitCities.Text = options;
         }
     }
 }
